@@ -44,7 +44,28 @@ if __name__ == '__main__':
         [hh,mm],[ss,mili] = time_stamp.split(':')[:2],time_stamp.split(':')[-1].split('.')
         return int(hh),int(mm),int(ss),int(mili)
     
-    
+    def fill_open(df):
+        
+        #find first -1
+        first_valid = -1
+        for i in xrange(len(df)):
+            if df.iloc[i]['spot'] != -1:
+                break
+            else:
+                first_valid = i
+                break
+        #found!    
+        if first_valid != -1:
+            has_open = True
+            for i in xrange(len(df)):
+                if df.iloc[i]['spot'] > 0:
+                    has_open = False
+                elif df.iloc[i]['spot'] == 0:
+                    has_open = True
+            #no exist open , so fill open directly
+            if not has_open:
+                df.ix[first_valid,'spot'] = 0
+                
     for idir in dirs:
         infiles = os.listdir(idir)
         date = int(idir.split('\\')[-1])
@@ -56,6 +77,9 @@ if __name__ == '__main__':
             df['spot'] = df['Time'].apply(timeSplit).apply(fspot.fcffex_time2spot)
             df['day'] = pd.Series([day] * len(df),index = df.index)
             df['id'] = pd.Series([infile.split('.')[0]] * len(df),index = df.index)
+            fill_open(df)
+            df.index = df['spot']
+            df = df[df.index != -1]
             print df.head()
             exit()
         

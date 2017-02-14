@@ -40,6 +40,7 @@ class DayMode(object):
             self.cffex_time2point[i] = count
             count += 1
         
+        self.cffex_last = count
         count = 0
         
         for i in range(self.OtherBreak.morning_begin,self.OtherBreak.morning_break_begin):
@@ -53,6 +54,7 @@ class DayMode(object):
         for i in range(self.OtherBreak.afternoon_begin,self.OtherBreak.afternoon_end):
             self.other_time2point[i] = count
             count += 1
+        self.other_last = count
      
     def fcffex_time2spot(self,(hour,minn,sec,milli)):
         nth = int( ( ( hour * 3600000 + minn * 60000 + sec * 1000 + milli ) - self.BEGIN_MILLI_SEC ) / self.INTERVAL )
