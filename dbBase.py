@@ -1,8 +1,8 @@
-
+#sqlacodegen
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String,DateTime,Numeric,Index
+from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index
 
 import pandas as pd
 import collections
@@ -12,7 +12,7 @@ class DB_BASE(object):
     def __init__(self,db_name):
         
         self.db_name = db_name
-        connect_str = "mysql+pymysql://xudi:123456@localhost:3306/{0}".format(db_name)
+        connect_str = "mysql+pymysql://xudi:123456@127.0.0.1:3306/{0}".format(db_name)
         
         self.engine = create_engine(connect_str,echo = False)
         self.meta   = MetaData(bind=self.engine)
@@ -77,6 +77,19 @@ class DB_BASE(object):
     def insert_listlike(self,_class,val,merge = False):
         _dict = dict(zip(_class.__table__.c.keys(),val))
         self.insert_dictlike(_class,_dict,merge)
+        
+    def insert_objs(self,obj_lists):
+        session = self.get_session()
+        for iobj in obj_lists:
+            session.add(iobj)
+        session.commit()
+        session.close()
+        
+    def insert_obj(self,iobj):
+        session = self.get_session()
+        session.add(iobj)
+        session.commit()
+        session.close()
 
     def delete_lists_obj(self,obj_lists):
         session = self.get_session();
@@ -118,22 +131,21 @@ class DB_BASE(object):
         return _class.__table__.primary_key.columns
     
     
-class CFFEX_IF(DB_BASE):
+class DB_UNI_TEST(DB_BASE):
     
-  
     def __init__(self,db_name):
-        super(CFFEX_IF,self).__init__(db_name)
+        super(DB_UNI_TEST,self).__init__(db_name)
     
     def show(self):
-        t201301 = Table('201301',self.meta,
-                     Column('point', Integer,primary_key = True),
+        t201301 = Table('test',self.meta,
+                     Column('point',Integer,primary_key = True,autoincrement = False),
                      Column('id', String(45))
                     )
         table_struct = self.quick_map(t201301)
         
         print table_struct.__table__.columns
     
-        id = "if0001"
+        id = "if"
         
         session = self.get_session()
         all_records = session.query(table_struct).all()
@@ -147,24 +159,29 @@ class CFFEX_IF(DB_BASE):
         
         dicts = []
         for i in range(10):
-            idict = dict(zip( col_names,(i,id) ))
+            idict = dict(zip( col_names,(i,id + str(i) ) ))
             dicts.append(idict)
          
         print dicts
         self.insert_dicts(table_struct, dicts, True)
+         
+        self.insert_obj(table_struct( **dict(zip( col_names,(99,'test' ) )) ) )
+        
+        objs = [table_struct( **dict(zip( col_names,(100,'xdd' ) )) ), table_struct( **dict(zip( col_names,(101,'lyx' ) )) )]
+        self.insert_objs(objs)
         
         lists = []
-        for i in range(10):
+        for i in range(20,30):
 #             self.insert_listlike(table_struct, (i,id),True)
-            ilist = (i,id)
+            ilist = (i,id + str(i) )
             lists.append(ilist)
-        
+         
         print lists
         self.insert_lists(table_struct, lists, True)
     
 if __name__ == '__main__':
-    cffex_if = CFFEX_IF('cffex_if')
-    cffex_if.show()
+    uni_test = DB_UNI_TEST('cffex_if')
+    uni_test.show()
     
         
         
