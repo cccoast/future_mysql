@@ -53,7 +53,21 @@ class DayMode(object):
         for i in range(self.OtherBreak.afternoon_begin,self.OtherBreak.afternoon_end):
             self.other_time2point[i] = count
             count += 1
-            
+     
+    def fcffex_time2spot(self,(hour,minn,sec,milli)):
+        nth = int( ( ( hour * 3600000 + minn * 60000 + sec * 1000 + milli ) - self.BEGIN_MILLI_SEC ) / self.INTERVAL )
+        if nth < self.LOWWER_BOUND or nth >= self.UPPER_BOUND:
+            return -1
+        else:
+            return self.cffex_time2point[nth]
+    
+    def fother_time2spot(self,(hour,minn,sec,milli)):
+        nth = int( ( ( hour * 3600000 + minn * 60000 + sec * 1000 + milli ) - self.BEGIN_MILLI_SEC ) / self.INTERVAL )
+        if nth < self.LOWWER_BOUND or nth >= self.UPPER_BOUND:
+            return -1
+        else:
+            return self.cffex_time2point[nth]
+        
 if __name__ == '__main__':
     import matplotlib.pyplot as plt 
     mode = DayMode()
