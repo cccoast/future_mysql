@@ -1,8 +1,9 @@
 import dbBase as db
 import os
 import pandas as pd
+import numpy as np
 
-from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index
+from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 
 import time2point
@@ -13,20 +14,20 @@ class cffex_if(db.DB_BASE):
         super(cffex_if,self).__init__(db_name)
         
         table_struct = Table(table_name,self.meta,
-                     Column('id',String,primary_key = True),
+                     Column('id',String(20),primary_key = True),
                      Column('day',Integer,primary_key = True,autoincrement = False),
                      Column('spot',Integer,primary_key = True,autoincrement = False),
-                     Column('Time',String),
-                     Column('LastPrice',Numeric),
-                     Column('TradeVolume',Numeric),
-                     Column('BidPrice',Numeric),
-                     Column('BidVolume',Numeric),
-                     Column('AskPrice',Numeric),
-                     Column('AskVolume',Numeric),
+                     Column('Time',String(20)),
+                     Column('LastPrice',Float),
+                     Column('TradeVolume',Integer),
+                     Column('BidPrice',Float),
+                     Column('BidVolume',Integer),
+                     Column('AskPrice',Float),
+                     Column('AskVolume',Integer),
                      Column('OpenInterest',Integer),
                     )
         
-        if_struct = self.quick_map(table_struct)
+        self.if_struct = self.quick_map(table_struct)
                 
         
 if __name__ == '__main__':
@@ -66,20 +67,32 @@ if __name__ == '__main__':
             if not has_open:
                 df.ix[first_valid,'spot'] = 0
                 
+        return first_valid
+                
     for idir in dirs:
         infiles = os.listdir(idir)
         date = int(idir.split('\\')[-1])
         inss = map(lambda x: x.split('.')[0],infiles)
-        day = month * 100 + date % 100
+        day =int( month * 100 + date % 100 )
         print day
+        new_records = cffex_if(db_name,day)
         for ins,infile in zip(inss,infiles):
+            print ins
             df = pd.read_csv(os.path.join(idir,infile),index_col = None,usecols = [0,1,3,4,5,6,7,8],parse_dates = False)
             df['spot'] = df['Time'].apply(timeSplit).apply(fspot.fcffex_time2spot)
             df['day'] = pd.Series([day] * len(df),index = df.index)
             df['id'] = pd.Series([infile.split('.')[0]] * len(df),index = df.index)
-            fill_open(df)
+            first_valid = fill_open(df)
             df.index = df['spot']
-            df = df[df.index != -1]
+            df = df[ df.index != -1 ]
+            df = df.reindex(xrange(fspot.cffex_last),method = 'pad')
+            df.fillna(method = 'pad',inplace = True)
+            df.iloc[:first_valid].fillna(method = 'backfill',inplace = True)
+            df['spot'] = df['spot'].apply(np.int)
+            df['day'] = df['day'].apply(np.int)
+            df['TradeVolume'] = df['TradeVolume'].apply(np.int)
             print df.head()
+            print df.tail()
+            new_records.insert_data_frame(new_records.if_struct, df, merge = True)
             exit()
         

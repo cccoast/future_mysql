@@ -45,7 +45,14 @@ class DB_BASE(object):
         self.execute_sql('Drop Table {0}.{1}'.format(self.db_name,table_name))
     
     def insert_data_frame(self,_class,df,merge = False):
-        self.insert_dicts(_class,df.to_dict('records'),merge)
+        magic_number = 1024
+        print len(df)
+        if len(df) < magic_number:
+            self.insert_dicts(_class,df.to_dict('records'),merge)
+        else:
+            for _begin in range(0,len(df),magic_number):
+                _end = _begin + magic_number if _begin + magic_number < len(df) else len(df)
+                self.insert_dicts(_class,df.iloc[_begin:_end].to_dict('records'),merge)
         
     def insert_dicts(self,_class,_dicts,merge = False):
         session = self.get_session()

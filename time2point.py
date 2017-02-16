@@ -1,4 +1,6 @@
 
+import numpy as np
+
 class DayMode(object):
     
     LOWWER_BOUND = 0
