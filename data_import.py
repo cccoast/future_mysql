@@ -63,8 +63,7 @@ def import_one_month(month,root_path,start_date):
             df['day'] = pd.Series([day] * len(df),index = df.index)
             df['id'] = pd.Series([infile.split('.')[0]] * len(df),index = df.index)
             
-            print df.head()
-            
+#             print df.head()
             df.sort_values(by = 'spot', axis = 0, inplace = True)
             df.drop_duplicates('spot', keep = 'first', inplace = True)
             df.index = df['spot']
@@ -76,8 +75,8 @@ def import_one_month(month,root_path,start_date):
             
             df.fillna(method = 'pad',inplace = True)
             if first_one > 0:
-                df.ix[:1,:].fillna(method = 'backfill',inplace = True)
-            print df.head()
+                df.ix[:first_one,:].fillna(method = 'backfill',inplace = True)
+#             print df.head()
             
             df['spot'] = df.index
             df['day'] = df['day'].apply(np.int)
@@ -91,10 +90,9 @@ def import_one_month(month,root_path,start_date):
 #             end = time.time()
 #             print 'elapsed = ', end - start
 
-            
-    
 if __name__ == '__main__':
-    month = 201401
+    month = 201403
     start_date = 0
-    import_path = r'D:\future\data\CFFEX\CFFEX_201401\201401\IF'
+    import_path = r'D:\future\data\CFFEX\CFFEX_201403\CFFEX\201403\IF'
     import_one_month(month,import_path,start_date) 
+    
