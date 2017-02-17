@@ -83,7 +83,6 @@ def import_one_month(month,root_path,start_date):
             df['TradeVolume'] = df['TradeVolume'].apply(np.int)
             
 #             print df.head()
-           
 #             start = time.time()
 #             new_records.insert_data_frame(new_records.if_struct, df, merge = False)
             df.to_sql(str(day),new_records.engine,index = False,if_exists = 'append',chunksize = 2048) 
@@ -91,8 +90,8 @@ def import_one_month(month,root_path,start_date):
 #             print 'elapsed = ', end - start
 
 if __name__ == '__main__':
-    month = 201403
+    month = 201412
     start_date = 0
-    import_path = r'D:\future\data\CFFEX\CFFEX_201403\CFFEX\201403\IF'
+    import_path = r'D:\future\data\CFFEX\CFFEX_201412\201412\IF'
     import_one_month(month,import_path,start_date) 
     
