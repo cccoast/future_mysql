@@ -138,6 +138,12 @@ class DB_BASE(object):
     def get_primary_key_obj(self,_class):
         return _class.__table__.primary_key.columns
     
+    def query_obj(self,obj,**kw):
+        ss = self.get_session()
+        ret = ss.query(obj).filter_by(**kw).all()
+        ss.close()
+        return ret
+    
     
 class DB_UNI_TEST(DB_BASE):
     
