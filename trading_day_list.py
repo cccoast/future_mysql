@@ -14,8 +14,6 @@ class Dates(db.DB_BASE):
         self.table_struct = Table(table_name,self.meta,
                      Column('date',Integer,primary_key = True,autoincrement = False),
                     )
-        
-    def create_table(self):
         self.date_struct = self.quick_map(self.table_struct)
         
 if __name__ == '__main__':
@@ -25,6 +23,5 @@ if __name__ == '__main__':
     df['date'] = df['date'].apply(lambda x: int(x.year * 10000 + x.month * 100 + x.day))
     print df.head()
     dates = Dates()
-    dates.create_table()
     df.to_sql('trading_days',dates.engine,index = False,if_exists = 'append',chunksize = 2048) 
     
