@@ -31,6 +31,8 @@ class cffex_if(db.DB_BASE):
     def create_table(self):
         self.if_struct = self.quick_map(self.table_struct)
                 
+    def check_table_exist(self):
+        return self.table_struct.exists()
         
 def import_one_month(month,root_path,start_date):
     
@@ -54,7 +56,6 @@ def import_one_month(month,root_path,start_date):
             continue
         print day
         new_records = cffex_if(db_name,day)
-        new_records.create_table()
         for ins,infile in zip(inss,infiles):
             print ins
             df = pd.read_csv(os.path.join(idir,infile),index_col = None,usecols = [0,1,3,4,5,6,7,8],parse_dates = False)

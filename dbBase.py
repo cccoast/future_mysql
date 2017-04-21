@@ -2,9 +2,8 @@
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index
+from sqlalchemy import Column, Integer, String
 
-import pandas as pd
 import collections
 
 class DB_BASE(object):
@@ -103,6 +102,7 @@ class DB_BASE(object):
         session = self.get_session();
         for i in obj_lists:
             session.delete(i)
+        session.flush()
         session.commit()
         session.close()
             
@@ -116,11 +116,16 @@ class DB_BASE(object):
             if isinstance(_values[0],collections.Iterable):
                 _lists = [dict(zip(_key,iv)) for iv in _values]
             else:
-                _lists = [{_key[i]:val} for i,val in enumerate(i,_values)]
+                _lists = [{_key[0]:val} for val in _values]
         else:
             return False
-            
-        session.execute(table.delete(),_lists)
+        
+#         session.execute(table.delete(),_lists)
+        for idict in _lists:
+            objs = session.query(_class).filter_by(**idict).all()
+            for iobj in objs:
+                session.delete(iobj)
+        session.flush()
         session.commit()
     
     def get_column_names(self,_class):
