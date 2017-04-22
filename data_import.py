@@ -20,7 +20,7 @@ class cffex_if(db.DB_BASE):
                      Column('spot',Integer,primary_key = True,autoincrement = False),
                      Column('Time',String(20)),
                      Column('LastPrice',Float),
-                     Column('TradeVolume',Integer),
+                     Column('Volume',Integer),
                      Column('BidPrice',Float),
                      Column('BidVolume',Integer),
                      Column('AskPrice',Float),
@@ -49,7 +49,7 @@ def import_one_month(month,root_path,start_date):
                 
     for idir in dirs:
         infiles = os.listdir(idir)
-        date = int(idir.split('\\')[-1])
+        date = int(idir.split(os.path.sep)[-1])
         inss = map(lambda x: x.split('.')[0],infiles)
         day = int( month * 100 + date % 100 )
         if day < start_date:
@@ -82,8 +82,14 @@ def import_one_month(month,root_path,start_date):
             df['spot'] = df.index
             df['day'] = df['day'].apply(np.int)
             df['TradeVolume'] = df['TradeVolume'].apply(np.int)
-            
-#             print df.head()
+            replaced = []
+            for i in df.columns:
+                if i != "TradeVolume":
+                    replaced.append(i)
+                else:
+                    replaced.append('Volume')    
+            df.columns = replaced
+            print len(df)
 #             start = time.time()
 #             new_records.insert_data_frame(new_records.if_struct, df, merge = False)
             df.to_sql(str(day),new_records.engine,index = False,if_exists = 'append',chunksize = 2048) 
@@ -91,8 +97,9 @@ def import_one_month(month,root_path,start_date):
 #             print 'elapsed = ', end - start
 
 if __name__ == '__main__':
-    month = 201412
+    month = 201405
     start_date = 0
-    import_path = r'D:\future\data\CFFEX\CFFEX_201412\201412\IF'
+    import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/{1}/IF'.format(month,month)
+    #import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/CFFEX/{0}/IF'.format(month,month)
     import_one_month(month,import_path,start_date) 
     

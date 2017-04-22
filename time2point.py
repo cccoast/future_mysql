@@ -22,7 +22,7 @@ class DayMode(object):
         morning_begin = 1800
         morning_end   = 18000
         afternoon_begin = 28800
-        afternoon_end = 43200
+        afternoon_end = 45000
         break1 = 1800
         break2 = 10800
     
@@ -48,7 +48,7 @@ class DayMode(object):
             self.cffex_time2point[i] = count
             count += 1
             
-        for i in range(self.CFFEX.afternoon_begin,self.CFFEX.afternoon_end):
+        for i in range(self.CFFEX.afternoon_begin,self.CFFEX.afternoon_end + 2):
             self.cffex_time2point[i] = count
             count += 1
         
@@ -63,7 +63,7 @@ class DayMode(object):
             self.other_time2point[i] = count
             count += 1
 
-        for i in range(self.OtherBreak.afternoon_begin,self.OtherBreak.afternoon_end):
+        for i in range(self.OtherBreak.afternoon_begin,self.OtherBreak.afternoon_end + 2):
             self.other_time2point[i] = count
             count += 1
         self.other_last = count
@@ -85,6 +85,7 @@ class DayMode(object):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt 
     mode = DayMode()
+    print mode.cffex_last,mode.other_last
     plt.plot( mode.other_time2point )
     plt.show()
     
