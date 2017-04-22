@@ -97,9 +97,9 @@ def import_one_month(month,root_path,start_date):
 #             print 'elapsed = ', end - start
 
 if __name__ == '__main__':
-    month = 201405
+    month = 201412
     start_date = 0
     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/{1}/IF'.format(month,month)
-    #import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/CFFEX/{0}/IF'.format(month,month)
+#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/CFFEX/{0}/IF'.format(month,month)
     import_one_month(month,import_path,start_date) 
     

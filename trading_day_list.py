@@ -57,7 +57,7 @@ class futureOrder(db.DB_BASE):
         
 def import_trading_days():
     
-    infile = r'D:\future\dates.csv'
+    infile = r'/media/xudi/software/future/dates.csv'
     df = pd.read_csv(infile,parse_dates = [0])
     df['date'] = df['date'].apply(lambda x: int(x.year * 10000 + x.month * 100 + x.day))
     print df.head()
@@ -80,10 +80,12 @@ def erase_invalid_days():
         all_future = cffex_if(db_name=dbname,table_name=str(date))
         if not all_future.check_table_exist():
             invalids.append(date)
-    print invalids
+    print 'total = ',len(records),'reserved = ',len(records) - len(invalids)
     dates.delete_lists(dates.date_struct, invalids)
           
 if __name__ == '__main__':
+    import_trading_days()
     erase_invalid_days()
+    set_future_order()
     
     
