@@ -35,7 +35,7 @@ class cffex_if(db.DB_BASE):
     def check_table_exist(self):
         return self.table_struct.exists()
         
-def import_one_month(month,root_path,start_date):
+def import_one_month(month,root_path,start_date,end_date):
     
     db_name = 'cffex_if'
     
@@ -69,6 +69,8 @@ def import_one_month(month,root_path,start_date):
         day = int( month * 100 + date % 100 )
         if day < start_date:
             continue
+        if day > end_date:
+            break
         print day
         new_records = cffex_if(db_name,day)
         for ins,infile in zip(inss,infiles):
@@ -93,6 +95,11 @@ def import_one_month(month,root_path,start_date):
             df = df[ df.index != -1 ]
             
             df.drop('spot',axis = 1,inplace = True )
+            
+            #fill data on where bid/ask volume == 0
+            df.ix[ df['BidVolume'] < 0.01 , 'BidPrice' ] = np.nan
+            df.ix[ df['AskVolume'] < 0.01 , 'AskPrice' ] = np.nan
+            
             first_one = df.index[0]
             df = df.reindex(xrange(fspot.cffex_last),method = 'pad')
             
@@ -127,13 +134,13 @@ if __name__ == '__main__':
     #import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/CFFEX/{0}/IF'.format(month,month)
     
     #for if 2015
-    month = 201504
-    start_date = 10
-    import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201501-201504/{0}/IF'.format(month)
+#     month = 201504
+#     start_date = 10
+#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201501-201504/{0}/IF'.format(month)
 
-#     month = 201505
-#     start_date = 0
-#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201505-201512/CFFEX/{0}/IF'.format(month)
-    
-    import_one_month(month,import_path,month * 100 + start_date) 
+    month = 201508
+    start_date = 25
+    end_date = 20150825
+    import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201505-201512/CFFEX/{0}/IF'.format(month)
+    import_one_month(month,import_path,month * 100 + start_date,end_date) 
     
