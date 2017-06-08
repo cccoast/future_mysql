@@ -28,7 +28,29 @@ class cffex_if_min(db.DB_BASE):
                     )
         
     def create_table(self):
-        self.if_struct = self.quick_map(self.table_struct)
+        self.if_min_struct = self.quick_map(self.table_struct)
+                
+    def check_table_exist(self):
+        return self.table_struct.exists()
+
+class cffex_if_day(db.DB_BASE):
+    
+    def __init__(self,db_name,table_name):
+        super(cffex_if_day,self).__init__(db_name)
+        
+        self.table_struct = Table(table_name,self.meta,
+                     Column('id',String(20),primary_key = True),
+                     Column('day',Integer,primary_key = True,autoincrement = False),
+                     Column('OpenPrice',Float),
+                     Column('HighPrice',Float),
+                     Column('LowPrice',Float),
+                     Column('ClosePrice',Float),
+                     Column('Volume',Integer),
+                     Column('OpenInterest',Integer),
+                    )
+        
+    def create_table(self):
+        self.if_day_struct = self.quick_map(self.table_struct)
                 
     def check_table_exist(self):
         return self.table_struct.exists()
@@ -40,7 +62,7 @@ class Sampler(object):
         self.trading_days = np.array([ int(obj.date) for obj in dates.query_obj(dates.date_struct) ])
         self.spots_gap = 120 * freq
         
-    def sample_if(self,start_date = None,end_date = None,force_reload = False):
+    def sample_if_min(self,start_date = None,end_date = None,force_reload = False):
         
         days = []
         if start_date is not None:
@@ -86,10 +108,41 @@ class Sampler(object):
                         min_df.ix[min_spot,'OpenInterest'] = int(tick_df.ix[tick_spot+self.spots_gap-1,'OpenInterest'])
                     
                     min_df.to_sql(str(iday),min_table.engine,index = False,if_exists = 'append') 
+        
+    def sample_if_day(self,force_reload = False):
+        
+        #date range the same as min block
+        day_columns = ('id','day','OpenPrice','HighPrice',\
+                            'LowPrice','ClosePrice','Volume','OpenInterest')
+        days = self.trading_days
+        
+        day_table = cffex_if_day('cffex_day','if')
+        if force_reload and day_table.check_table_exist():
+            print '[warning] drop day table [if]'
+            day_table.drop_table('if')
+        day_table.create_table()
+        
+        for iday in days:
+            print iday
+            min_table = cffex_if_min('cffex_if_min',str(iday))
+            if min_table.check_table_exist():
+                min_df_all = pd.read_sql_table(str(iday),min_table.engine,index_col = ['spot'])
+                for id,min_df in min_df_all.groupby('id'):
+                    open_price = float(min_df.ix[0,'OpenPrice'])
+                    close_price = float(min_df.ix[len(min_df)-1,'ClosePrice'])
+                    high_price = float(min_df['HighPrice'].max())
+                    low_price = float(min_df['LowPrice'].min())
+                    volume = int(min_df.ix[len(min_df)-1,'Volume'])
+                    open_interest = int(min_df.ix[len(min_df)-1,'OpenInterest'])
+                    to_be_inserted_list = (id,int(iday),open_price,high_price,low_price,\
+                                                close_price,volume,open_interest)
+                    to_be_inserted_dict = dict(zip(day_columns,to_be_inserted_list))
+                    day_table.insert_dictlike(day_table.if_day_struct, to_be_inserted_dict, merge = True)
                     
 if __name__ == '__main__':
     
     sampler = Sampler()
-    sampler.sample_if(force_reload = True)
+#     sampler.sample_if(force_reload = True)
+    sampler.sample_if_day(force_reload = True)
     
     
