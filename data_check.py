@@ -10,6 +10,11 @@ def get_table_from_sql_db(db_name,table_name):
     df = pd.read_sql_table(table_name,table.engine)
     print df[df["id"] == 'IF1502']['BidPrice']
 
+def check_trading_day_list(ipckey):
+    shm_api = sm.Shm(ipckey)
+    trading_day_list = pd.Series(shm_api.getTradingDayList())
+    print trading_day_list
+    
 def get_data_from_memory(ipckey,day = None):
     shm_api = sm.Shm(ipckey)
     shm_header = shm_api.getHeader()
@@ -64,5 +69,6 @@ def get_nostruct_data_from_memory(ipckey,nostruct_ipckey):
 if __name__ == '__main__':
 #     get_table_from_sql_db('cffex_if','20150119')
 #     get_data_from_memory('0x0f0f0005')
-    get_nostruct_data_from_memory('0x0f0f0002','0x0e0e0002')
+#     get_nostruct_data_from_memory('0x0f0f0002','0x0e0e0002')
+    check_trading_day_list('0x0f0f0002')
     
