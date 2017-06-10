@@ -1,7 +1,9 @@
 import pandas as pd
+import numpy as np
 import ShmPython as sm
 from data_import import cffex_if
 import matplotlib.pyplot as plt
+import ShmPython
 
 def get_table_from_sql_db(db_name,table_name):
     table = cffex_if(db_name,table_name)
@@ -24,7 +26,7 @@ def get_data_from_memory(ipckey,day = None):
         end_spot = shm_api.getLastSpot(0)
     
     print nth_day,spots_count_perday
-    ind_id = 124
+    ind_id = 123
     ins_index = 0
     ind_index = shm_api.id2index_ind(ind_id)
     
@@ -37,9 +39,30 @@ def get_data_from_memory(ipckey,day = None):
         
     plt.plot(datas)
     plt.show()
+
+def get_nostruct_data_from_memory(ipckey,nostruct_ipckey):
+    shm_api = ShmPython.Shm(ipckey)
+    shm_header = shm_api.getHeader()
+    nostruct_shm_api = ShmPython.NoStructShm(nostruct_ipckey,0x1503)
     
+    ins_list = shm_header.getInstrumentsList()
+    ind_list = shm_header.getIndicatorsList()
+    trading_days_list = nostruct_shm_api.getTradingDayList()
+    print trading_days_list
+    
+    ins_name_list = [nostruct_shm_api.id2name_ind(i) for i in ind_list]
+    ind_name_list = [nostruct_shm_api.id2name_ins(i) for i in ins_list]
+    print ins_name_list
+    print ind_name_list
+    
+    milli_sec_list = [nostruct_shm_api.getSpot2MilliSec(i) for i in xrange(shm_header.getSpotsCountPerDay())]
+    spots_list     = [nostruct_shm_api.getMilliSec2Spot(i) for i in milli_sec_list]
+    
+    print milli_sec_list
+    print spots_list
+        
 if __name__ == '__main__':
 #     get_table_from_sql_db('cffex_if','20150119')
-    get_data_from_memory('0x0f0f0003')
-    
+#     get_data_from_memory('0x0f0f0005')
+    get_nostruct_data_from_memory('0x0f0f0002','0x0e0e0002')
     
