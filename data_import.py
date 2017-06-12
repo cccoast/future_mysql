@@ -9,32 +9,8 @@ from sqlalchemy import Table
 
 import time2point
 from functools import partial
-
-class cffex_if(db.DB_BASE):
+from table_struct import cffex_if
     
-    def __init__(self,db_name,table_name):
-        super(cffex_if,self).__init__(db_name)
-        
-        self.table_struct = Table(table_name,self.meta,
-                     Column('id',String(20),primary_key = True),
-                     Column('day',Integer,primary_key = True,autoincrement = False),
-                     Column('spot',Integer,primary_key = True,autoincrement = False),
-                     Column('Time',String(20)),
-                     Column('LastPrice',Float),
-                     Column('Volume',Integer),
-                     Column('BidPrice',Float),
-                     Column('BidVolume',Integer),
-                     Column('AskPrice',Float),
-                     Column('AskVolume',Integer),
-                     Column('OpenInterest',Integer),
-                    )
-        
-    def create_table(self):
-        self.if_struct = self.quick_map(self.table_struct)
-                
-    def check_table_exist(self):
-        return self.table_struct.exists()
-        
 def import_one_month(month,root_path,start_date,end_date):
     
     db_name = 'cffex_if'

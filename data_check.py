@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import ShmPython as sm
-from data_import import cffex_if
+from table_struct import cffex_if
 import matplotlib.pyplot as plt
 import ShmPython
 
