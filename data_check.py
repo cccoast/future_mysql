@@ -31,7 +31,7 @@ def get_data_from_memory(ipckey,day = None):
         end_spot = shm_api.getLastSpot(0)
     
     print nth_day,spots_count_perday
-    ind_id = 123
+    ind_id = 103
     ins_index = 0
     ind_index = shm_api.id2index_ind(ind_id)
     

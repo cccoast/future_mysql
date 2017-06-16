@@ -80,7 +80,13 @@ class DayMode(object):
         if nth < self.LOWWER_BOUND or nth >= self.UPPER_BOUND:
             return -1
         else:
-            return self.cffex_time2point[nth]
+            return self.other_time2point[nth]
+        
+    def get_spot_count_perday(self,exchange = 'cffex'):
+        if exchange == 'cffex':
+            return self.cffex_last
+        else:
+            return self.other_last
         
 if __name__ == '__main__':
     import matplotlib.pyplot as plt 

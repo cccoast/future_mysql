@@ -10,36 +10,40 @@ from sqlalchemy import Table
 import time2point
 from functools import partial
 from table_struct import cffex_if
-    
-def import_one_month(month,root_path,start_date,end_date):
-    
-    db_name = 'cffex_if'
-    
-    dirs = filter(lambda x: os.path.isdir(os.path.join(x)), map(lambda y: os.path.join(root_path,y), os.listdir(root_path)))
-#     print dirs
-    
-    fspot = time2point.DayMode()
-    
-    def timeSplit(time_stamp):
-#         try:
-#             [hh,mm],[ss,mili] = time_stamp.split(':')[:2],time_stamp.split(':')[-1].split('.')
-#         except:
-#             print time_stamp
-#             exit(-1)
+
+cffex = ['if','tf','ic','ih']
+shfex = ['au','ag','cu','al','zn','rb','ru']
+
+def timeSplit(time_stamp):
         [hh,mm],[ss,mili] = time_stamp.split(':')[:2],time_stamp.split(':')[-1].split('.')
         return int(hh),int(mm),int(ss),int(mili)
     
-    def SpecialTimeSplit(cookie,time_stamp):
-        hh,mm,ss = time_stamp.split(':')[:]
-        bucket = ( int(hh) - 9 ) * 3600 + ( int(mm) ) * 60 + int(ss)
-        if cookie[bucket] == False:
-            cookie[bucket] = True
-            return int(hh),( int(mm) ),int(ss),0
-        else:
-            return int(hh),( int(mm) ),int(ss),500
-            
+def SpecialTimeSplit(cookie,time_stamp):
+    hh,mm,ss = time_stamp.split(':')[:]
+    bucket = ( int(hh) - 9 ) * 3600 + ( int(mm) ) * 60 + int(ss)
+    if cookie[bucket] == False:
+        cookie[bucket] = True
+        return int(hh),( int(mm) ),int(ss),0
+    else:
+        return int(hh),( int(mm) ),int(ss),500
+        
+def import_tick_per_month(ticker,month,root_path,start_date,end_date):
+    
+    fspot = time2point.DayMode()
+    
+    if ticker[:2] in cffex:
+        db_name = 'cffex_' + ticker[:2]
+        ftime2spot = fspot.fcffex_time2spot
+        spots_count_perday = fspot.cffex_last
+    elif ticker[:2] in shfex:
+        db_name = 'shfex_' + ticker[:2]
+        ftime2spot = fspot.fother_time2spot
+        spots_count_perday = fspot.other_last
+        
+    dirs = filter(lambda x: os.path.isdir(os.path.join(x)), map(lambda y: os.path.join(root_path,y), os.listdir(root_path)))
+
     for idir in dirs:
-        infiles = os.listdir(idir)
+        infiles = filter(lambda x: str.isdigit(x.split('.')[0][2:]),os.listdir(idir))
         date = int(idir.split(os.path.sep)[-1])
         inss = map(lambda x: x.split('.')[0],infiles)
         day = int( month * 100 + date % 100 )
@@ -51,8 +55,8 @@ def import_one_month(month,root_path,start_date,end_date):
         new_records = cffex_if(db_name,day)
         for ins,infile in zip(inss,infiles):
             print ins
-            df = pd.read_csv(os.path.join(idir,infile),index_col = None,usecols = [0,1,3,4,5,6,7,8],parse_dates = False)
-            
+            df = pd.read_csv(os.path.join(idir,infile),index_col = None,usecols = [0,1,3,4,5,6,7,8],parse_dates = False)            
+#             print df.head()
             split_time_func = timeSplit
             ##for speical time stamp
             if '.' not in df['Time'].iloc[0]:
@@ -60,7 +64,7 @@ def import_one_month(month,root_path,start_date,end_date):
                 cookie = [False] * ( (15 - 9) * 3600 + 30 * 60 )
                 split_time_func = partial(SpecialTimeSplit,cookie)
             
-            df['spot'] = df['Time'].apply(split_time_func).apply(fspot.fcffex_time2spot)
+            df['spot'] = df['Time'].apply(split_time_func).apply(ftime2spot)
             df['day'] = pd.Series([day] * len(df),index = df.index)
             df['id'] = pd.Series([infile.split('.')[0]] * len(df),index = df.index)
             
@@ -76,8 +80,9 @@ def import_one_month(month,root_path,start_date,end_date):
             df.ix[ df['BidVolume'] < 0.01 , 'BidPrice' ] = np.nan
             df.ix[ df['AskVolume'] < 0.01 , 'AskPrice' ] = np.nan
             
-            first_one = df.index[0]
-            df = df.reindex(xrange(fspot.cffex_last),method = 'pad')
+            #take care here, some inactive contrace may not have ask/bid volume at first
+            first_one = np.max(df.apply(lambda x:x.first_valid_index(),axis = 0))
+            df = df.reindex(xrange(spots_count_perday),method = 'pad')
             
             df.fillna(method = 'pad',inplace = True)
             if first_one > 0:
@@ -94,29 +99,49 @@ def import_one_month(month,root_path,start_date,end_date):
                 else:
                     replaced.append('Volume')    
             df.columns = replaced
-            print len(df)
+#             print df.head()
 #             start = time.time()
 #             new_records.insert_data_frame(new_records.if_struct, df, merge = False)
-            df.to_sql(str(day),new_records.engine,index = False,if_exists = 'append',chunksize = 4096) 
+            df.to_sql(str(day),new_records.engine,index = False,if_exists = 'append',chunksize = 8192) 
 #             end = time.time()
 #             print 'elapsed = ', end - start
 
-if __name__ == '__main__':
+def import_cffex_if(year,month):
     
-    #for if 2014
-    #month = 201412
-    #start_date = 0
-    #import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/{1}/IF'.format(month,month)
-    #import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/CFFEX/{0}/IF'.format(month,month)
+#     for if 2014
+#     month = 201412
+#     start_date = 0
+#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/{1}/IF'.format(month,month)
+#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/CFFEX/{0}/IF'.format(month,month)
     
-    #for if 2015
+#     for if 2015
 #     month = 201504
 #     start_date = 10
 #     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201501-201504/{0}/IF'.format(month)
 
-    month = 201508
-    start_date = 25
+    start_date = 20150825
     end_date = 20150825
     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201505-201512/CFFEX/{0}/IF'.format(month)
-    import_one_month(month,import_path,month * 100 + start_date,end_date) 
+    import_tick_per_month('if',year*100 + month,import_path,start_date,end_date) 
+
+def import_shfex_au(year,month):  
+
+    start_date = 20131231
+    end_date = 20160101
+    import_path = r'/media/xudi/software/future/data/SHFE/{}/AU'.format(year*100 + month)
+    import_tick_per_month('au',year*100 + month,import_path,start_date,end_date)
+    
+if __name__ == '__main__':
+    
+    for month in range(1,13):
+        import_shfex_au(2014, month)
+    
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-year',dest = 'year',nargs = '?',type = str)
+    parser.add_argument('-month',dest = 'month',nargs = '?',type = str)
+    args = parser.parse_args()
+    arg_dict = vars(args)
+    if ( arg_dict['year'] is not None) and (arg_dict['month'] is not None):
+        import_shfex_au(int(arg_dict['year']),int(arg_dict['month']))
     
