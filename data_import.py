@@ -125,31 +125,23 @@ def import_cffex_if(year,month):
     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/{1}/IF'\
                         .format(year*100 + month,year*100 + month)
 #     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/CFFEX/{0}/IF'.format(month,month)
+#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201501-201504/{0}/IF'.format(month)
+#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201505-201512/CFFEX/{0}/IF'.format(month)
+
     import_tick_per_month('if',year*100 + month,import_path,start_date,end_date)
     
-#     for if 2015
-#     month = 201504
-#     start_date = 10
-#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201501-201504/{0}/IF'.format(month)
-
-#     start_date = 20150825
-#     end_date = 20150825
-#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201505-201512/CFFEX/{0}/IF'.format(month)
-#     import_tick_per_month('if',year*100 + month,import_path,start_date,end_date) 
-
 def import_shfex_au(year,month):  
 
     start_date = 20130101
     end_date = 20160101
     #format 1
     import_path = r'/media/xudi/software/future/data/SHFE/{}/AU'.format(year*100 + month)
-    #format 2
-#     import_path = r'/media/xudi/software/future/data/SHFE/SHFE201510-201512/{}/AU'.format(year*100 + month)
+    if not os.path.exists(import_path):
+        #format 2
+        import_path = r'/media/xudi/software/future/data/SHFE/SHFE201510-201512/{}/AU'.format(year*100 + month)
     import_tick_per_month('au',year*100 + month,import_path,start_date,end_date)
     
 if __name__ == '__main__':
-    
-    import_shfex_au(2014,02)
     
     import argparse
     parser = argparse.ArgumentParser()

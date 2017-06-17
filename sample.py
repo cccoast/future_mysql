@@ -70,7 +70,7 @@ class Sampler(object):
                             'LowPrice','ClosePrice','Volume','OpenInterest')
         days = self.trading_days
         
-        day_table = cffex_if_day('data_model_day','if')
+        day_table = cffex_if_day('cffex_day','if')
         if force_reload and day_table.check_table_exist():
             print '[warning] drop day table [if]'
             day_table.drop_table('if')
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     
     sampler = Sampler()
 #     sampler.sample_if(force_reload = True)
-    sampler.sample_if_min(force_reload = False)
+#     sampler.sample_if_min(force_reload = False)
     sampler.sample_if_day(force_reload = True)
     
     

@@ -70,6 +70,7 @@ class futureOrder(db.DB_BASE):
     
     def __init__(self,market_id):
         db_name,table_name = 'dates','future_order' + '_' + str.lower(market_id[:2])
+        self.table_name = table_name
         super(futureOrder,self).__init__(db_name)
         self.table_name = table_name
         self.table_struct = Table(table_name,self.meta,
@@ -109,6 +110,11 @@ class futureOrder(db.DB_BASE):
         trading_day_list = dates.get_trading_day_list()
         
         #if date order already exists, then skip
+        print 'force_reload = ',force_reload
+        if force_reload:
+            all_records = self.query_obj(self.future_order_struct)
+            self.delete_lists_obj(all_records)
+        
         if not force_reload:
             exist_order_dates = set(map(lambda x:int(x.date),self.query_obj(self.future_order_struct))) 
             
@@ -143,12 +149,12 @@ def import_trading_days():
     dates = AllTradingDays()
     df.to_sql('all_trading_days',dates.engine,index = False,if_exists = 'append',chunksize = 2048) 
     
-def set_future_order_if():
+def set_future_order_if(force_reload = False):
         
     fo = futureOrder('if') 
-    fo.set_order_cffex_if()   
+    fo.set_order_cffex_if(force_reload = force_reload)   
 
-def set_valid_days(dbname = 'cffex_if'):
+def set_valid_days(dbname):
     all_dates = AllTradingDays()
     trading_day_list = all_dates.get_trading_day_list()
     valids = []
@@ -170,6 +176,12 @@ def erase_invalid_table(dbname,level = 'tick'):
     tables = get_all_table_names(dbname)
     if level == 'tick':
         model = cffex_if
+    elif level == '1min':
+        model = cffex_if_min
+    else:
+        return 0
+    
+    print 'start to erase'
     valid_trading_days = set(map(lambda x:str(x),AllTradingDays().get_trading_day_list()))
     for i in tables:
         if i not in valid_trading_days:
@@ -177,10 +189,10 @@ def erase_invalid_table(dbname,level = 'tick'):
             to_be_erased.drop_table(i)
             print 'drop table = ',i
             
-def adjust_if_days():
-    import_trading_days()
-    set_valid_days()
-    set_future_order_if()
+def adjust_if_days(dbname):
+    set_valid_days(dbname)
+    erase_invalid_table(dbname)
+    set_future_order_if(force_reload = True)
 
 def check_cffex_shfex_align():
     trading_day_list = (AllTradingDays().get_trading_day_list())
@@ -199,6 +211,6 @@ def check_cffex_shfex_align():
     print 'what b has but a does not = ', sorted(list(b & diff))
 
 if __name__ == '__main__':
-    set_future_order_if()
+    check_cffex_shfex_align()
     
     
