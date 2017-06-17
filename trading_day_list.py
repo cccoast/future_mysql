@@ -109,7 +109,6 @@ class futureOrder(db.DB_BASE):
         trading_day_list = dates.get_trading_day_list()
         
         #if date order already exists, then skip
-        exists_order_dates = []
         if not force_reload:
             exist_order_dates = set(map(lambda x:int(x.date),self.query_obj(self.future_order_struct))) 
             

@@ -31,7 +31,7 @@ class Sampler(object):
                             'ClosePrice','LowPrice','Volume','OpenInterest')
         print 'spots count of tick/min = ',total_spots_tick,total_spots_min
         for iday in days:
-            tick_table = cffex_if('cffex_if',str(iday))
+            tick_table = cffex_if('cffex_tick',str(iday))
             if tick_table.check_table_exist():
                 tick_table.create_table()
                 min_table = cffex_if_min('cffex_if_min',str(iday))               
@@ -70,7 +70,7 @@ class Sampler(object):
                             'LowPrice','ClosePrice','Volume','OpenInterest')
         days = self.trading_days
         
-        day_table = cffex_if_day('cffex_day','if')
+        day_table = cffex_if_day('data_model_day','if')
         if force_reload and day_table.check_table_exist():
             print '[warning] drop day table [if]'
             day_table.drop_table('if')
