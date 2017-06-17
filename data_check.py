@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 import ShmPython as sm
-from table_struct import cffex_if
+from table_struct import data_model_tick
 import matplotlib.pyplot as plt
 import ShmPython
 
 def get_table_from_sql_db(db_name,table_name):
-    table = cffex_if(db_name,table_name)
+    table = data_model_tick(db_name,table_name)
     df = pd.read_sql_table(table_name,table.engine)
     print df[df["id"] == 'IF1502']['BidPrice']
 
@@ -92,7 +92,7 @@ def check_adjust(ipckey1,ipckey2):
     print df[5].sum()
     
 if __name__ == '__main__':
-#     get_table_from_sql_db('data_model_tick','20150119')
+#     get_table_from_sql_db('cffex_if','20150119')
 #     get_data_from_memory('0x0f0f0005')
 #     get_nostruct_data_from_memory('0x0f0f0002','0x0e0e0002')
 #     check_trading_day_list('0x0f0f0002')

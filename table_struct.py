@@ -34,10 +34,10 @@ class User(db.DB_BASE):
         session.close()
         return ret
 
-class cffex_if(db.DB_BASE):
+class data_model_tick(db.DB_BASE):
     
     def __init__(self,db_name,table_name):
-        super(cffex_if,self).__init__(db_name)
+        super(data_model_tick,self).__init__(db_name)
         
         self.table_struct = Table(table_name,self.meta,
                      Column('id',String(20),primary_key = True),
@@ -59,10 +59,10 @@ class cffex_if(db.DB_BASE):
     def check_table_exist(self):
         return self.table_struct.exists()
     
-class cffex_if_min(db.DB_BASE):
+class data_model_min(db.DB_BASE):
     
     def __init__(self,db_name,table_name):
-        super(cffex_if_min,self).__init__(db_name)
+        super(data_model_min,self).__init__(db_name)
         
         self.table_struct = Table(table_name,self.meta,
                      Column('id',String(20),primary_key = True),
@@ -83,10 +83,10 @@ class cffex_if_min(db.DB_BASE):
     def check_table_exist(self):
         return self.table_struct.exists()
 
-class cffex_if_day(db.DB_BASE):
+class data_model_day(db.DB_BASE):
     
     def __init__(self,db_name,table_name):
-        super(cffex_if_day,self).__init__(db_name)
+        super(data_model_day,self).__init__(db_name)
         
         self.table_struct = Table(table_name,self.meta,
                      Column('id',String(20),primary_key = True),

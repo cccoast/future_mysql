@@ -9,7 +9,7 @@ from sqlalchemy import Table
 
 import time2point
 from functools import partial
-from table_struct import cffex_if
+from table_struct import data_model_tick
 from trading_day_list import Dates, AllTradingDays
 
 cffex = ['if','tf','ic','ih']
@@ -41,7 +41,7 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date):
         ftime2spot = fspot.fother_time2spot
         spots_count_perday = fspot.other_last
     
-    db_model = cffex_if
+    db_model = data_model_tick
     valid_dates = set(map(lambda x:int(x),AllTradingDays().get_trading_day_list()))
      
     dirs = filter(lambda x: os.path.isdir(os.path.join(x)), map(lambda y: os.path.join(root_path,y), os.listdir(root_path)))

@@ -2,7 +2,7 @@ import dbBase as db
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 
-from table_struct import cffex_if,cffex_if_min,cffex_if_day
+from table_struct import data_model_tick,data_model_min,data_model_day
 from trading_day_list import Dates
 from time2point import DayMode
 
@@ -31,10 +31,10 @@ class Sampler(object):
                             'ClosePrice','LowPrice','Volume','OpenInterest')
         print 'spots count of tick/min = ',total_spots_tick,total_spots_min
         for iday in days:
-            tick_table = cffex_if('cffex_tick',str(iday))
+            tick_table = data_model_tick('cffex_if',str(iday))
             if tick_table.check_table_exist():
                 tick_table.create_table()
-                min_table = cffex_if_min('cffex_if_min',str(iday))               
+                min_table = data_model_min('cffex_if_min',str(iday))               
                 if force_reload and min_table.check_table_exist():
                     print '[warning] drop table = ',iday
                     min_table.drop_table(str(iday))
@@ -70,7 +70,7 @@ class Sampler(object):
                             'LowPrice','ClosePrice','Volume','OpenInterest')
         days = self.trading_days
         
-        day_table = cffex_if_day('cffex_day','if')
+        day_table = data_model_day('cffex_day','if')
         if force_reload and day_table.check_table_exist():
             print '[warning] drop day table [if]'
             day_table.drop_table('if')
@@ -82,7 +82,7 @@ class Sampler(object):
         
         for iday in days:
             print iday
-            min_table = cffex_if_min('cffex_if_min',str(iday))
+            min_table = data_model_min('cffex_if_min',str(iday))
             if min_table.check_table_exist():
                 min_df_all = pd.read_sql_table(str(iday),min_table.engine,index_col = ['spot'])
                 for id,min_df in min_df_all.groupby('id'):

@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 import pandas as pd
 import numpy as np
-from table_struct import cffex_if,cffex_if_min
+from table_struct import data_model_tick,data_model_min
 from itertools import chain
 
 from misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day
@@ -119,7 +119,7 @@ class futureOrder(db.DB_BASE):
             exist_order_dates = set(map(lambda x:int(x.date),self.query_obj(self.future_order_struct))) 
             
         for date in trading_day_list:
-            if_table_obj = cffex_if_min(db_name=dbname,table_name=str(date))
+            if_table_obj = data_model_min(db_name=dbname,table_name=str(date))
             if not if_table_obj.check_table_exist():
                 continue 
             year,month,day = get_year_month_day(date)
@@ -130,7 +130,7 @@ class futureOrder(db.DB_BASE):
             
             print date,rolling_day[year][month],exchang_rolling_day[year][month]
             if method == 'fixed_days':
-                sql = 'select distinct id from cffex_if_min.{0} order by id;'.format(str(date))
+                sql = 'select distinct id from data_model_min.{0} order by id;'.format(str(date))
                 tickers = if_table_obj.execute_sql(sql)
                 orders = [ irec[0] for irec in tickers ]
                 if date > int(rolling_day[year][month]) and date <= int(exchang_rolling_day[year][month]):
@@ -159,7 +159,7 @@ def set_valid_days(dbname):
     trading_day_list = all_dates.get_trading_day_list()
     valids = []
     for date in trading_day_list:
-        if_table_obj = cffex_if(db_name=dbname,table_name=str(date))
+        if_table_obj = data_model_tick(db_name=dbname,table_name=str(date))
         if if_table_obj.check_table_exist():
             valids.append(date)
     print 'valids = ',len(valids)
@@ -175,9 +175,9 @@ def set_valid_days(dbname):
 def erase_invalid_table(dbname,level = 'tick'):
     tables = get_all_table_names(dbname)
     if level == 'tick':
-        model = cffex_if
+        model = data_model_tick
     elif level == '1min':
-        model = cffex_if_min
+        model = data_model_min
     else:
         return 0
     
