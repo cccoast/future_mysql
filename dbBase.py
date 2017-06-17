@@ -75,10 +75,14 @@ class DB_BASE(object):
     
     def insert_lists(self,_class,_lists,merge = False):
         cols = _class.__table__.c.keys()
-        if isinstance(_lists[0],collections.Iterable):
-            _dicts = [dict(zip(cols,val)) for val in _lists]
+        if len(cols) > 1:
+            if isinstance(_lists[0],collections.Iterable):
+                _dicts = [dict(zip(cols,val)) for val in _lists]
+            else:
+                _dicts = [{cols[i]:val} for i,val in enumerate(_lists)]
         else:
-            _dicts = [{cols[i]:val} for i,val in enumerate(_lists)]
+            _dicts = [{cols[0]:val} for val in _lists]
+            
         self.insert_dicts(_class,_dicts,merge)
     
     def insert_listlike(self,_class,val,merge = False):

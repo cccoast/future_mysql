@@ -2,6 +2,37 @@
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 import dbBase as db
+import werkzeug.security as myhash
+
+class User(db.DB_BASE):
+    
+    def __init__(self):
+        db_name = 'user'
+        table_name = 'password'
+        super(User,self).__init__(db_name)
+        
+        self.table_struct = Table(table_name,self.meta,
+                     Column('name',String(20),primary_key = True),
+                     Column('password',String(160)),
+                    )
+        
+        self.user_struct = self.quick_map(self.table_struct)
+        
+    def insert_user(self,name,pwd):
+        indict = {'name':name,'password':myhash.generate_password_hash(pwd)}
+        self.insert_dictlike(self.user_struct,indict)
+        
+    def check_user(self,name,pwd):
+        session = self.get_session()
+        re = session.query(self.user_struct).filter_by(name = name).all()
+        ret = False
+        for i in re:
+            if myhash.check_password_hash(i.password, pwd):
+                ret = True
+            else:
+                ret = False
+        session.close()
+        return ret
 
 class cffex_if(db.DB_BASE):
     

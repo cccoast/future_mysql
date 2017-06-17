@@ -10,6 +10,7 @@ from sqlalchemy import Table
 import time2point
 from functools import partial
 from table_struct import cffex_if
+from trading_day_list import Dates, AllTradingDays
 
 cffex = ['if','tf','ic','ih']
 shfex = ['au','ag','cu','al','zn','rb','ru']
@@ -39,7 +40,10 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date):
         db_name = 'shfex_' + ticker[:2]
         ftime2spot = fspot.fother_time2spot
         spots_count_perday = fspot.other_last
-        
+    
+    db_model = cffex_if
+    valid_dates = set(map(lambda x:int(x),AllTradingDays().get_trading_day_list()))
+     
     dirs = filter(lambda x: os.path.isdir(os.path.join(x)), map(lambda y: os.path.join(root_path,y), os.listdir(root_path)))
 
     for idir in dirs:
@@ -51,11 +55,18 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date):
             continue
         if day > end_date:
             break
+        
+        new_records = db_model(db_name,day)
+        if new_records.check_table_exist() or (day not in valid_dates):
+            continue
+        
         print day
-        new_records = cffex_if(db_name,day)
         for ins,infile in zip(inss,infiles):
             print ins
             df = pd.read_csv(os.path.join(idir,infile),index_col = None,usecols = [0,1,3,4,5,6,7,8],parse_dates = False)            
+            #some data source file may be in wrong format
+            if len(df) < 1:
+                continue
 #             print df.head()
             split_time_func = timeSplit
             ##for speical time stamp
@@ -109,32 +120,36 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date):
 def import_cffex_if(year,month):
     
 #     for if 2014
-#     month = 201412
-#     start_date = 0
-#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/{1}/IF'.format(month,month)
+    start_date = 20140416
+    end_date = 20140416
+    import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/{1}/IF'\
+                        .format(year*100 + month,year*100 + month)
 #     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{0}/CFFEX/{0}/IF'.format(month,month)
+    import_tick_per_month('if',year*100 + month,import_path,start_date,end_date)
     
 #     for if 2015
 #     month = 201504
 #     start_date = 10
 #     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201501-201504/{0}/IF'.format(month)
 
-    start_date = 20150825
-    end_date = 20150825
-    import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201505-201512/CFFEX/{0}/IF'.format(month)
-    import_tick_per_month('if',year*100 + month,import_path,start_date,end_date) 
+#     start_date = 20150825
+#     end_date = 20150825
+#     import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201505-201512/CFFEX/{0}/IF'.format(month)
+#     import_tick_per_month('if',year*100 + month,import_path,start_date,end_date) 
 
 def import_shfex_au(year,month):  
 
-    start_date = 20131231
+    start_date = 20130101
     end_date = 20160101
+    #format 1
     import_path = r'/media/xudi/software/future/data/SHFE/{}/AU'.format(year*100 + month)
+    #format 2
+#     import_path = r'/media/xudi/software/future/data/SHFE/SHFE201510-201512/{}/AU'.format(year*100 + month)
     import_tick_per_month('au',year*100 + month,import_path,start_date,end_date)
     
 if __name__ == '__main__':
     
-    for month in range(1,13):
-        import_shfex_au(2014, month)
+    import_shfex_au(2014,02)
     
     import argparse
     parser = argparse.ArgumentParser()
