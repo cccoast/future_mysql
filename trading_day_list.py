@@ -130,7 +130,7 @@ class futureOrder(db.DB_BASE):
             
             print date,rolling_day[year][month],exchang_rolling_day[year][month]
             if method == 'fixed_days':
-                sql = 'select distinct id from data_model_min.{0} order by id;'.format(str(date))
+                sql = 'select distinct id from {}.{} order by id;'.format(dbname,str(date))
                 tickers = if_table_obj.execute_sql(sql)
                 orders = [ irec[0] for irec in tickers ]
                 if date > int(rolling_day[year][month]) and date <= int(exchang_rolling_day[year][month]):

@@ -11,9 +11,7 @@ import time2point
 from functools import partial
 from table_struct import data_model_tick
 from trading_day_list import Dates, AllTradingDays
-
-cffex = ['if','tf','ic','ih']
-shfex = ['au','ag','cu','al','zn','rb','ru']
+from misc import cffex_tickers,shfex_tickers
 
 def timeSplit(time_stamp):
         [hh,mm],[ss,mili] = time_stamp.split(':')[:2],time_stamp.split(':')[-1].split('.')
@@ -32,11 +30,11 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date):
     
     fspot = time2point.DayMode()
     
-    if ticker[:2] in cffex:
+    if ticker[:2] in cffex_tickers:
         db_name = 'cffex_' + ticker[:2]
         ftime2spot = fspot.fcffex_time2spot
         spots_count_perday = fspot.cffex_last
-    elif ticker[:2] in shfex:
+    elif ticker[:2] in shfex_tickers:
         db_name = 'shfex_' + ticker[:2]
         ftime2spot = fspot.fother_time2spot
         spots_count_perday = fspot.other_last
@@ -134,6 +132,8 @@ def import_shfex_au(year,month):
 
     start_date = 20130101
     end_date = 20160101
+#     start_date = 20140314
+#     end_date = 20140314
     #format 1
     import_path = r'/media/xudi/software/future/data/SHFE/{}/AU'.format(year*100 + month)
     if not os.path.exists(import_path):
@@ -142,6 +142,8 @@ def import_shfex_au(year,month):
     import_tick_per_month('au',year*100 + month,import_path,start_date,end_date)
     
 if __name__ == '__main__':
+    
+    import_shfex_au(2014,03)
     
     import argparse
     parser = argparse.ArgumentParser()
