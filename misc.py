@@ -7,6 +7,9 @@ get_year_month_day = lambda x: (int(x/10000),int((x%10000)/100),int(x%100))
 cffex_tickers = ['if','tf','ic','ih']
 shfex_tickers = ['au','ag','cu','al','zn','rb','ru']
 
+def sorted_dict(indict,sort_value_index = 1,reverse = True):
+    return sorted(indict.items(), key = lambda x:x[sort_value_index], reverse = reverse)
+    
 def run_parelell_tasks(func,iter_args):
     tasks = []
     for iarg in iter_args:
@@ -17,60 +20,14 @@ def run_parelell_tasks(func,iter_args):
     for itask in tasks:
         itask.join()
         
-class Ticker(object):
-    
-    def __init__(self):
-        self.tid_dict = {}
-        self.cffex = ['if','tf','ic','ih']
-        j = 1
-        for i in self.cffex:
-            self.tid_dict[i] = 11000 + j
-            j += 1
-        self.shfex = ['au','ag','cu','al','zn','rb','ru']
-        j = 1
-        for i in self.shfex:
-            self.tid_dict[i] = 12000 + j
-            j += 1
-            
-    def get_market_id(self,ticker):
-        ticker = str.lower(ticker)[:2]
-        if ticker in self.cffex:
-            return int(self.tid_dict[ticker] / 1000)
-        if ticker in self.shfex:
-            return int(self.tid_dict[ticker] / 1000)
-        return None
-    
-    def get_market_no(self,ticker):
-        ticker = str.lower(ticker)[:2]
-        if ticker in self.cffex:
-            return int(self.tid_dict[ticker] % 1000)
-        if ticker in self.shfex:
-            return int(self.tid_dict[ticker] % 1000)
-        return None
-    
-    def get_id(self,ticker):
-        market_id,market_no = self.get_market_id(ticker),self.get_market_no(ticker)
-        last = int(filter(lambda x: str.isdigit(x),ticker))
-        if market_id:
-            return ( market_id * 1000 + market_no ) * 10000 + last  
-        else:
-            return None 
         
-    def get_dbname(self,ticker,level = 'tick'):   
-        ticker = str.lower(ticker)[:2]
-        if ticker in self.cffex:  
-            ret = '_'.join(('cffex',ticker))
-        elif ticker in self.shfex:
-            ret =  '_'.join(('shfex',ticker))
-        else:
-            return None
-        if level == 'tick':
-            return ret
-        elif level.endswith('min'):
-            return '_'.join((ret,'min'))
-        else:
-            return '_'.join((ret,'day'))
-        
+def get_special_month_day(indate):
+    if not isinstance(indate,pd.tslib.Timestamp):
+        t = pd.to_datetime(str(indate))
+        return t.day
+    else:
+        return indate.day 
+
 def get_special_weekday(indate):
     if not isinstance(indate,pd.tslib.Timestamp):
         return pd.to_datetime(str(indate)).isoweekday()
@@ -88,6 +45,14 @@ def get_specical_weekday_in_daterange(start_day,end_day,weekday):
                                          get_dates_range_timestamp(start_day,end_day) ) ) 
     return dates
 
+def get_specical_monthday_in_date_range(start_day,end_day,month_day):
+    dates = pd.Series( index = filter( lambda x:get_special_month_day(x) == month_day, \
+                                         get_dates_range_timestamp(start_day,end_day) ) ) 
+    ret = {}
+    for year,year_dates in dates.groupby(lambda x:x.year):
+        ret[year] = map(timestamp2int,year_dates.index)
+    return ret
+
 def get_nth_specical_weekday_in_daterange(start_day,end_day,weekday,nth):
     dates = get_specical_weekday_in_daterange(start_day,end_day,weekday)
     ret = {}
@@ -97,7 +62,17 @@ def get_nth_specical_weekday_in_daterange(start_day,end_day,weekday,nth):
                                                             if len(month_nth) > nth ]
     return ret
 
-if __name__ == '__main__':
-    print get_specical_weekday_in_daterange(20140101,20151231,5)
-    print get_nth_specical_weekday_in_daterange(20140101,20151231,5,2)
+def get_first_bigger_day_than_special_monthday(dates,monthday):
+    date_series = pd.Series( index = map(lambda x:pd.to_datetime(str(x)),dates) )
+    ret = []
+    for year,year_dates in date_series.groupby(lambda x:x.year):
+        for month,month_dates in year_dates.groupby(lambda x:x.month):
+            first_bigger_day = filter(lambda x: timestamp2int(x) % 100 >= monthday,month_dates.index)
+            if len(first_bigger_day) > 0:
+                ret.append(timestamp2int(first_bigger_day[0]))
+    return ret        
     
+if __name__ == '__main__':
+    print get_nth_specical_weekday_in_daterange(20140101,20151231,5,2)
+    print get_specical_monthday_in_date_range(20140101,20150101,15)
+    print get_first_bigger_day_than_special_monthday(get_dates_range_timestamp(20140101,20150101),15)

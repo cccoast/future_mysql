@@ -110,7 +110,7 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date):
             df.columns = replaced
 #             print df.head()
 #             start = time.time()
-#             new_records.insert_data_frame(new_records.if_struct, df, merge = False)
+#             new_records.insert_data_frame(new_records.tick_struct, df, merge = False)
             df.to_sql(str(day),new_records.engine,index = False,if_exists = 'append',chunksize = 8192) 
 #             end = time.time()
 #             print 'elapsed = ', end - start

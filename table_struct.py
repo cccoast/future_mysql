@@ -3,7 +3,8 @@ from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 import dbBase as db
 import werkzeug.security as myhash
-
+from numpy.f2py.auxfuncs import throw_error
+        
 class User(db.DB_BASE):
     
     def __init__(self):
@@ -54,7 +55,7 @@ class data_model_tick(db.DB_BASE):
                     )
         
     def create_table(self):
-        self.if_struct = self.quick_map(self.table_struct)
+        self.tick_struct = self.quick_map(self.table_struct)
                 
     def check_table_exist(self):
         return self.table_struct.exists()
@@ -78,7 +79,7 @@ class data_model_min(db.DB_BASE):
                     )
         
     def create_table(self):
-        self.if_min_struct = self.quick_map(self.table_struct)
+        self.min_struct = self.quick_map(self.table_struct)
                 
     def check_table_exist(self):
         return self.table_struct.exists()
@@ -100,8 +101,86 @@ class data_model_day(db.DB_BASE):
                     )
         
     def create_table(self):
-        self.if_day_struct = self.quick_map(self.table_struct)
+        self.day_struct = self.quick_map(self.table_struct)
                 
     def check_table_exist(self):
         return self.table_struct.exists()
+    
+class Ticker(object):
+    
+    def __init__(self):
+        self.tid_dict = {}
+        self.cffex = ['if','tf','ic','ih']
+        j = 1
+        for i in self.cffex:
+            self.tid_dict[i] = 11000 + j
+            j += 1
+        self.shfex = ['au','ag','cu','al','zn','rb','ru']
+        j = 1
+        for i in self.shfex:
+            self.tid_dict[i] = 12000 + j
+            j += 1
+        
+    def get_market_id(self,ticker):
+        ticker = str.lower(ticker)[:2]
+        if ticker in self.cffex:
+            return int(self.tid_dict[ticker] / 1000)
+        if ticker in self.shfex:
+            return int(self.tid_dict[ticker] / 1000)
+        return None
+    
+    def get_market_no(self,ticker):
+        ticker = str.lower(ticker)[:2]
+        if ticker in self.cffex:
+            return int(self.tid_dict[ticker] % 1000)
+        if ticker in self.shfex:
+            return int(self.tid_dict[ticker] % 1000)
+        return None
+    
+    def get_id(self,ticker):
+        market_id,market_no = self.get_market_id(ticker),self.get_market_no(ticker)
+        last = int(filter(lambda x: str.isdigit(x),ticker))
+        if market_id:
+            return ( market_id * 1000 + market_no ) * 10000 + last  
+        else:
+            return None 
+        
+    def get_dbname(self,ticker,level = 'tick'):   
+        ticker = str.lower(ticker)[:2]
+        if ticker in self.cffex:  
+            ret = '_'.join(('cffex',ticker))
+        elif ticker in self.shfex:
+            ret =  '_'.join(('shfex',ticker))
+        else:
+            return None
+        if level == 'tick':
+            return ret
+        elif level.endswith('min'):
+            return '_'.join((ret,'min'))
+        else:
+            return '_'.join((ret,'day'))
+    
+    def get_table_name(self,ticker,date = None,level = 'tick'):
+        ticker = str.lower(ticker[:2])
+        if level == 'tick' or level == 'min':
+            return str(date)
+        elif level == 'day':
+            return ticker
+    
+    def get_num_of_tickers(self,ticker,day):
+        ticker = str.lower(ticker[:2])
+        dbname = self.get_dbname(ticker, 'day')
+        table_name = self.get_table_name(ticker,day,level = 'day')
+        table = data_model_day(dbname,table_name)
+        if table.check_table_exist():
+            table.create_table()
+            records = table.query_obj(table.day_struct,day = day)
+            tickers = [rec.id for rec in records]
+        else:
+            raise LookupError
+        return len(tickers)
+
+if __name__ == '__main__':
+    tick_info = Ticker()
+    print tick_info.get_num_of_tickers('au', 20140102)
     

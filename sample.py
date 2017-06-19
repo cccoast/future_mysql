@@ -2,10 +2,10 @@ import dbBase as db
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 
-from table_struct import data_model_tick,data_model_min,data_model_day
+from table_struct import data_model_tick,data_model_min,data_model_day,Ticker
 from trading_day_list import Dates
 from time2point import DayMode
-from misc import Ticker,cffex_tickers,run_parelell_tasks
+from misc import cffex_tickers,run_parelell_tasks
 
 import numpy as np
 import pandas as pd
@@ -79,13 +79,12 @@ class Sampler(object):
         
         #start multiprocessing
         sub_day_list = np.split(days,[ len(days)/default_subprocess_numbers * i for i in range(1,default_subprocess_numbers)])
-
+        run_parelell_tasks(sample_sub_day_list,sub_day_list)
+        
 #         pool = Pool(default_subprocess_numbers)
 #         pool.map(sample_sub_day_list,sub_day_list)
 #         pool.close()
 #         pool.join()
-        
-        run_parelell_tasks(sample_sub_day_list,sub_day_list)
         
     def sample_day(self,ticker,force_reload = False):
         
@@ -108,23 +107,28 @@ class Sampler(object):
         
         day_table.create_table()
         
-        for iday in days:
-            min_table = data_model_min(db_name_min,str(iday))
-            if min_table.check_table_exist():
-                print iday
-                min_df_all = pd.read_sql_table(str(iday),min_table.engine,index_col = ['spot'])
-                for id,min_df in min_df_all.groupby('id'):
-                    open_price = float(min_df.ix[0,'OpenPrice'])
-                    close_price = float(min_df.ix[len(min_df)-1,'ClosePrice'])
-                    high_price = float(min_df['HighPrice'].max())
-                    low_price = float(min_df['LowPrice'].min())
-                    volume = int(min_df.ix[len(min_df)-1,'Volume'])
-                    open_interest = int(min_df.ix[len(min_df)-1,'OpenInterest'])
-                    to_be_inserted_list = (id,int(iday),open_price,high_price,low_price,\
-                                                close_price,volume,open_interest)
-                    to_be_inserted_dict = dict(zip(day_columns,to_be_inserted_list))
-                    day_table.insert_dictlike(day_table.if_day_struct, to_be_inserted_dict, merge = True)
-                    
+        def sample_sub_day_list(sample_days):
+#             print sample_days
+            for iday in sample_days:
+                min_table = data_model_min(db_name_min,str(iday))
+                if min_table.check_table_exist():
+                    print iday
+                    min_df_all = pd.read_sql_table(str(iday),min_table.engine,index_col = ['spot'])
+                    for ticker_id,min_df in min_df_all.groupby('id'):
+                        open_price = float(min_df.ix[0,'OpenPrice'])
+                        close_price = float(min_df.ix[len(min_df)-1,'ClosePrice'])
+                        high_price = float(min_df['HighPrice'].max())
+                        low_price = float(min_df['LowPrice'].min())
+                        volume = int(min_df.ix[len(min_df)-1,'Volume'])
+                        open_interest = int(min_df.ix[len(min_df)-1,'OpenInterest'])
+                        to_be_inserted_list = (ticker_id,int(iday),open_price,high_price,low_price,\
+                                                    close_price,volume,open_interest)
+                        to_be_inserted_dict = dict(zip(day_columns,to_be_inserted_list))
+                        day_table.insert_dictlike(day_table.day_struct, to_be_inserted_dict, merge = True)
+        
+        sub_day_list = np.split(days,[ len(days)/default_subprocess_numbers * i for i in range(1,default_subprocess_numbers)])
+        run_parelell_tasks(sample_sub_day_list,(days,))
+                 
 def debug_single_day_min(ticker,day = 20140314,freq = 120):
     spots_gap = 120 * freq
     ticker_info = Ticker()
@@ -157,12 +161,11 @@ def debug_single_day_min(ticker,day = 20140314,freq = 120):
             
         print min_df.head() 
 
-                       
 if __name__ == '__main__':
     
     sampler = Sampler()
-    sampler.sample_min('au',force_reload = False)
-#     sampler.sample_day('au',force_reload = True)
+#     sampler.sample_min('au',force_reload = False)
+    sampler.sample_day('au',force_reload = True)
 
 #     debug_single_day_min('au',day = 20140314)
     
