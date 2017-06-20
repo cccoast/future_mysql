@@ -104,15 +104,15 @@ class DayMode(object):
             return self.other_last
 
     def get_other_break_info(self):
-        break_spots = ( self.other_time2point[ (mode.OtherBreak.morning_begin )  ],\
-                        self.other_time2point[ (mode.OtherBreak.morning_break_end )  ],\
-                            self.other_time2point[ (mode.OtherBreak.afternoon_begin  )  ] )
+        break_spots = ( self.other_time2point[ (self.OtherBreak.morning_begin )  ],\
+                        self.other_time2point[ (self.OtherBreak.morning_break_end )  ],\
+                            self.other_time2point[ (self.OtherBreak.afternoon_begin  )  ] )
         break_millis = map(self.fother_spot2time,break_spots)
         return break_spots,break_millis
     
     def get_cffex_break_info(self):
-        break_spots = ( self.cffex_time2point[ (mode.CFFEX.morning_begin )  ],\
-                            self.cffex_time2point[ (mode.CFFEX.afternoon_begin ) ] )
+        break_spots = ( self.cffex_time2point[ (self.CFFEX.morning_begin )  ],\
+                            self.cffex_time2point[ (self.CFFEX.afternoon_begin ) ] )
         break_millis = map(self.fcffex_spot2time,break_spots)
         return break_spots,break_millis
     
@@ -121,9 +121,7 @@ if __name__ == '__main__':
     mode = DayMode()
     print mode.get_cffex_break_info()
     print mode.get_other_break_info()
-    print mode.cffex_last,mode.INTERVAL,\
-            ','.join(map(lambda x:str(x),mode.get_cffex_break_info()[0])),\
-                ','.join(map(lambda x:str(x),mode.get_cffex_break_info()[1]))
+
 
 
 

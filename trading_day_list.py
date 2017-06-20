@@ -75,8 +75,8 @@ class futureOrder(db.DB_BASE):
         self.table_name = table_name
         super(futureOrder,self).__init__(db_name)
         self.table_name = table_name
-        ticker_columns = [ '{0}{1:0>4}'.format(ticker,str(i)) for i in range(num_of_tickers)] 
-        print ticker_columns
+        ticker_columns = [ '{0}{1:0>4}'.format(ticker,str(i)) for i in range(1,num_of_tickers+1)] 
+#         print ticker_columns
         self.table_struct = Table(table_name,self.meta,
                      Column('date',Integer,primary_key = True,autoincrement = False),\
                      *[ Column(i,String(20)) for i in ticker_columns ] 

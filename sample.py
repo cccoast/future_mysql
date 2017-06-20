@@ -78,7 +78,7 @@ class Sampler(object):
                         min_df.to_sql(str(iday),min_table.engine,index = False,if_exists = 'append') 
         
         #start multiprocessing
-        sub_day_list = np.split(days,[ len(days)/default_subprocess_numbers * i for i in range(1,default_subprocess_numbers)])
+        sub_day_list = map(list,np.split(days,[ len(days)/default_subprocess_numbers * i for i in range(1,default_subprocess_numbers)]))
         run_parelell_tasks(sample_sub_day_list,sub_day_list)
         
 #         pool = Pool(default_subprocess_numbers)
@@ -126,8 +126,8 @@ class Sampler(object):
                         to_be_inserted_dict = dict(zip(day_columns,to_be_inserted_list))
                         day_table.insert_dictlike(day_table.day_struct, to_be_inserted_dict, merge = True)
         
-        sub_day_list = np.split(days,[ len(days)/default_subprocess_numbers * i for i in range(1,default_subprocess_numbers)])
-        run_parelell_tasks(sample_sub_day_list,(days,))
+        sub_day_list = map(list,np.split(days,[ len(days)/default_subprocess_numbers * i for i in range(1,default_subprocess_numbers)]))
+        run_parelell_tasks(sample_sub_day_list,sub_day_list)
                  
 def debug_single_day_min(ticker,day = 20140314,freq = 120):
     spots_gap = 120 * freq
