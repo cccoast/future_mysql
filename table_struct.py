@@ -93,7 +93,7 @@ class data_model_min(db.DB_BASE):
 
 class data_model_day(db.DB_BASE):
     
-    def __init__(self,db_name,table_name):
+    def __init__(self,db_name,table_name = None):
         super(data_model_day,self).__init__(db_name)
         
         self.table_struct = None

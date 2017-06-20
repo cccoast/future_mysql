@@ -69,7 +69,13 @@ class AllTradingDays(Dates):
         
 class futureOrder(db.DB_BASE):
     
-    def __init__(self,ticker,num_of_tickers):
+    def __init__(self,ticker,num_of_tickers = None):
+        
+        if num_of_tickers is None:
+            tick_info = Ticker()
+            day = Dates().get_trading_day_list()[0]
+            num_of_tickers = tick_info.get_num_of_tickers(ticker,day)
+        
         ticker = str.lower(ticker[:2])
         db_name,table_name = 'dates','future_order' + '_' + ticker
         self.table_name = table_name
