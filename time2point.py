@@ -42,14 +42,19 @@ class DayMode(object):
         self.cffex_time2point = [-1] * 46802
         self.other_time2point = [-1] * 46802
         
+        self.cffex_point2time = [-1] * 46802
+        self.other_point2time = [-1] * 46802
+        
         count = 0
         
         for i in range(self.CFFEX.morning_begin,self.CFFEX.morning_end):
             self.cffex_time2point[i] = count
+            self.cffex_point2time[count] = ( i/2 ) * 1000 + ( i%2 ) * self.INTERVAL + self.BEGIN_MILLI_SEC
             count += 1
-            
+ 
         for i in range(self.CFFEX.afternoon_begin,self.CFFEX.afternoon_end + 2):
             self.cffex_time2point[i] = count
+            self.cffex_point2time[count] = ( i/2 ) * 1000 + ( i%2 ) * self.INTERVAL + self.BEGIN_MILLI_SEC
             count += 1
         
         self.cffex_last = count
@@ -57,15 +62,19 @@ class DayMode(object):
         
         for i in range(self.OtherBreak.morning_begin,self.OtherBreak.morning_break_begin):
             self.other_time2point[i] = count
+            self.other_point2time[count] = ( i/2 ) * 1000 + ( i%2 ) * self.INTERVAL + self.BEGIN_MILLI_SEC
             count += 1
-            
+   
         for i in range(self.OtherBreak.morning_break_end,self.OtherBreak.morning_end):
             self.other_time2point[i] = count
+            self.other_point2time[count] = ( i/2 ) * 1000 + ( i%2 ) * self.INTERVAL + self.BEGIN_MILLI_SEC
             count += 1
 
         for i in range(self.OtherBreak.afternoon_begin,self.OtherBreak.afternoon_end + 2):
             self.other_time2point[i] = count
+            self.other_point2time[count] = ( i/2 ) * 1000 + ( i%2 ) * self.INTERVAL + self.BEGIN_MILLI_SEC
             count += 1
+            
         self.other_last = count
      
     def fcffex_time2spot(self,(hour,minn,sec,milli)):
@@ -81,20 +90,41 @@ class DayMode(object):
             return -1
         else:
             return self.other_time2point[nth]
+    
+    def fcffex_spot2time(self,spot):
+        return self.cffex_point2time[spot]
+    
+    def fother_spot2time(self,spot):
+        return self.other_point2time[spot]
         
     def get_spot_count_perday(self,exchange = 'cffex'):
         if exchange == 'cffex':
             return self.cffex_last
         else:
             return self.other_last
-        
+
+    def get_other_break_info(self):
+        break_spots = ( self.other_time2point[ (mode.OtherBreak.morning_begin )  ],\
+                        self.other_time2point[ (mode.OtherBreak.morning_break_end )  ],\
+                            self.other_time2point[ (mode.OtherBreak.afternoon_begin  )  ] )
+        break_millis = map(self.fother_spot2time,break_spots)
+        return break_spots,break_millis
+    
+    def get_cffex_break_info(self):
+        break_spots = ( self.cffex_time2point[ (mode.CFFEX.morning_begin )  ],\
+                            self.cffex_time2point[ (mode.CFFEX.afternoon_begin ) ] )
+        break_millis = map(self.fcffex_spot2time,break_spots)
+        return break_spots,break_millis
+    
 if __name__ == '__main__':
     import matplotlib.pyplot as plt 
     mode = DayMode()
-    print mode.cffex_last,mode.other_last
-    plt.plot( mode.other_time2point )
-    plt.show()
-    
+    print mode.get_cffex_break_info()
+    print mode.get_other_break_info()
+    print mode.cffex_last,mode.INTERVAL,\
+            ','.join(map(lambda x:str(x),mode.get_cffex_break_info()[0])),\
+                ','.join(map(lambda x:str(x),mode.get_cffex_break_info()[1]))
+
 
 
 
