@@ -24,6 +24,7 @@ def get_data_from_memory(ipckey,day = None):
     
     trading_day_list = pd.Series(shm_api.getTradingDayList())
     spots_count_perday = shm_header.getSpotsCountPerDay()
+    spots_count = shm_header.getSpotsCount()
     if day is not None:
         nth_day = trading_day_list[ trading_day_list == day ].index[0]
         start_spot = nth_day * spots_count_perday
@@ -31,10 +32,11 @@ def get_data_from_memory(ipckey,day = None):
     else:
         nth_day = 0
         start_spot = 0
-        end_spot = shm_api.getLastSpot(0)
-    
-    print nth_day,spots_count_perday
-    ind_id = 103
+#         end_spot = shm_api.getLastSpot(0)
+        end_spot = spots_count - spots_count_perday
+        
+    print nth_day,spots_count_perday,spots_count,start_spot,end_spot
+    ind_id = 120
     ins_index = 0
     ind_index = shm_api.id2index_ind(ind_id)
     
@@ -100,4 +102,6 @@ if __name__ == '__main__':
 #     get_nostruct_data_from_memory('0x0f0f0002','0x0e0e0002')
 #     check_trading_day_list('0x0f0f0002')
 #     check_adjust('0x0f0f0002','0x0f0f0004')
-    get_table_from_sql_db('shfex_au','20140228')
+#     get_table_from_sql_db('shfex_au','20140228')
+    get_data_from_memory('0x0f0f0016')
+    
