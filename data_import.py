@@ -25,8 +25,8 @@ def SpecialTimeSplit(cookie,time_stamp):
         return int(hh),( int(mm) ),int(ss),0
     else:
         return int(hh),( int(mm) ),int(ss),500
-        
-def import_tick_per_month(ticker,month,root_path,start_date,end_date):
+
+def import_tick_per_month(ticker,month,root_path,start_date,end_date,force_reload = False):
     
     fspot = time2point.DayMode()
     
@@ -55,10 +55,17 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date):
             break
         
         new_records = db_model(db_name,day)
-        if new_records.check_table_exist() or (day not in valid_dates):
+        if (day not in valid_dates):
             continue
-        
+        if not force_reload:
+            if new_records.check_table_exist():
+                continue
+        else:
+            if new_records.check_table_exist():
+                print 'warning drop table = ',day
+                new_records.drop_table(str(day))
         print day
+        
         for ins,infile in zip(inss,infiles):
             print ins
             df = pd.read_csv(os.path.join(idir,infile),index_col = None,usecols = [0,1,3,4,5,6,7,8],parse_dates = False)            
@@ -86,21 +93,27 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date):
             df.drop('spot',axis = 1,inplace = True )
             
             #fill data on where bid/ask volume == 0
+            #if bid/ask price is other text type, 
             df.ix[ df['BidVolume'] < 0.01 , 'BidPrice' ] = np.nan
             df.ix[ df['AskVolume'] < 0.01 , 'AskPrice' ] = np.nan
             
             #take care here, some inactive contrace may not have ask/bid volume at first
             first_one = np.max(df.apply(lambda x:x.first_valid_index(),axis = 0))
             df = df.reindex(xrange(spots_count_perday),method = 'pad')
-            
+
             df.fillna(method = 'pad',inplace = True)
             if first_one > 0:
                 df.ix[:first_one,:].fillna(method = 'backfill',inplace = True)
-#             print df.head()
-            
+
+            #bid/ask price may not be float
+            if ( not isinstance(df.iloc[0]['BidPrice'],np.float)) and (not isinstance(df.iloc[0]['BidPrice'],np.float64)):
+                df[ ['BidPrice'] ] = df[ ['BidPrice'] ].astype(np.float)
+            if ( not isinstance(df.iloc[0]['AskPrice'],np.float)) and (not isinstance(df.iloc[0]['AskPrice'],np.float64)):
+                df[ ['AskPrice'] ] = df[ ['AskPrice'] ].astype(np.float)
+                
             df['spot'] = df.index
             df['day'] = df['day'].apply(np.int)
-            df['TradeVolume'] = df['TradeVolume'].apply(np.int)
+            df['TradeVolume'] = df['TradeVolume'].astype(np.int)
             replaced = []
             for i in df.columns:
                 if i != "TradeVolume":
@@ -128,10 +141,10 @@ def import_cffex_if(year,month):
 
     import_tick_per_month('if',year*100 + month,import_path,start_date,end_date)
     
-def import_shfex_au(year,month):  
+def import_shfex_au(year,month,force_reload = False):  
 
-    start_date = 20130101
-    end_date = 20160101
+    start_date = 20140228
+    end_date = 20140228
 #     start_date = 20140314
 #     end_date = 20140314
     #format 1
@@ -139,11 +152,11 @@ def import_shfex_au(year,month):
     if not os.path.exists(import_path):
         #format 2
         import_path = r'/media/xudi/software/future/data/SHFE/SHFE201510-201512/{}/AU'.format(year*100 + month)
-    import_tick_per_month('au',year*100 + month,import_path,start_date,end_date)
+    import_tick_per_month('au',year*100 + month,import_path,start_date,end_date,force_reload = force_reload)
     
 if __name__ == '__main__':
     
-    import_shfex_au(2014,03)
+    import_shfex_au(2014,2,force_reload = True)
     
     import argparse
     parser = argparse.ArgumentParser()

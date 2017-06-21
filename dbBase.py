@@ -41,7 +41,7 @@ class DB_BASE(object):
         return re
     
     def drop_table(self,table_name):
-        self.execute_sql('Drop Table {0}.{1}'.format(self.db_name,table_name))
+        self.execute_sql('Drop Table {0}.`{1}`'.format(self.db_name,table_name))
     
     def insert_data_frame(self,_class,df,merge = False,chunk_size = 1024):
         magic_number = chunk_size

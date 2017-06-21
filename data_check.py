@@ -6,10 +6,13 @@ import matplotlib.pyplot as plt
 import ShmPython
 
 def get_table_from_sql_db(db_name,table_name):
+#     dtype = {1:np.float,2:np.float,4:np.float,3:np.int,5:np.int,6:np.int,7:np.int}
     table = data_model_tick(db_name,table_name)
     df = pd.read_sql_table(table_name,table.engine)
-    print df[df["id"] == 'IF1502']['BidPrice']
-
+    print [ type(df.iloc[0][i]) for i in df.columns ]
+    print isinstance(df.iloc[0]['BidPrice'],np.float64)
+    print df.head()
+    
 def check_trading_day_list(ipckey):
     shm_api = sm.Shm(ipckey)
     trading_day_list = pd.Series(shm_api.getTradingDayList())
@@ -90,10 +93,11 @@ def check_adjust(ipckey1,ipckey2):
     #pdiff.txt comes from what adjustor output, line 74
     df = pd.read_csv('~/tmp/pdiff{}.txt'.format(ins_index + 1),index_col = 0,header = None,sep = ' ')
     print df[5].sum()
-    
+
 if __name__ == '__main__':
 #     get_table_from_sql_db('cffex_if','20150119')
 #     get_data_from_memory('0x0f0f0005')
 #     get_nostruct_data_from_memory('0x0f0f0002','0x0e0e0002')
 #     check_trading_day_list('0x0f0f0002')
-    check_adjust('0x0f0f0002','0x0f0f0004')
+#     check_adjust('0x0f0f0002','0x0f0f0004')
+    get_table_from_sql_db('shfex_au','20140228')
