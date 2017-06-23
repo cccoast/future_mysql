@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from table_struct import data_model_tick
+from future_table_struct import data_model_tick
 import matplotlib.pyplot as plt
 import ShmPython
 

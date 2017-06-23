@@ -1,16 +1,11 @@
-import dbBase as db
 import os
 import pandas as pd
 import numpy as np
-import time
-
-from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
-from sqlalchemy import Table
 
 import time2point
 from functools import partial
-from table_struct import data_model_tick
-from trading_day_list import Dates, AllTradingDays
+from future_table_struct import data_model_tick
+from trading_day_list import AllTradingDays
 from misc import cffex_tickers, shfex_tickers
 
 
@@ -143,9 +138,9 @@ def import_tick_per_month(ticker,
                 else:
                     replaced.append('Volume')
             df.columns = replaced
-            #             print df.head()
-            #             start = time.time()
-            #             new_records.insert_data_frame(new_records.tick_struct, df, merge = False)
+#             print df.head()
+#             start = time.time()
+#             new_records.insert_data_frame(new_records.tick_struct, df, merge = False)
             df.to_sql(
                 str(day),
                 new_records.engine,

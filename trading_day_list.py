@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 import pandas as pd
 import numpy as np
-from table_struct import data_model_tick, data_model_min, data_model_day, Ticker
+from future_table_struct import data_model_tick, data_model_min, data_model_day, Ticker
 from itertools import chain
 
 from misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day,\
