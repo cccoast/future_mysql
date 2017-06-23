@@ -22,7 +22,7 @@ class Sampler(object):
     def __init__(self, freq=1):
         dates = Dates()
         self.trading_days = np.array(
-            [int(obj.date) for obj in dates.query_obj(dates.date_struct)])
+            [int(obj.date) for obj in dates.query_obj(dates.table_struct)])
         self.spots_gap = 120 * freq
 
     def sample_min(self,

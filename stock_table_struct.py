@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 import dbBase as db
-from numba.tests.npyufunc.test_ufuncbuilding import MyException
-
 
 class stock_data_model_base(db.DB_BASE):
 
@@ -12,13 +10,13 @@ class stock_data_model_base(db.DB_BASE):
         
     def create_table(self):
         if self.table_struct is not None:
-            self.tick_struct = self.quick_map(self.table_struct)
+            self.table_struct = self.quick_map(self.table_struct)
 
     def check_table_exist(self):
         if self.table_struct is not None:
             return self.table_struct.exists()
         else:
-            raise MyException("no table specified")
+            raise Exception("no table specified")
         
 
 class stock_dates(db.DB_BASE):
@@ -29,7 +27,7 @@ class stock_dates(db.DB_BASE):
         if table_name is not None:
             self.table_struct = Table(
             table_name, 
-            self.metadata,
+            self.meta,
             Column('dates', Numeric(10, 0), primary_key=True),
             Column('day_of_week', Numeric(10, 0)),
             Column('day_of_month', Numeric(10, 0)),
@@ -70,7 +68,7 @@ class stock_data_model_index_component(stock_data_model_base):
         if table_name is not None:
             self.table_struct = Table(
                 table_name, 
-                self.metadata,
+                self.meta,
                 Column('index_code', String(100), primary_key=True, nullable=False),
                 Column('instrument_code', String(100), primary_key=True, nullable=False),
                 Column('effective_date', Numeric(10, 0), primary_key=True, nullable=False),
@@ -89,7 +87,7 @@ class stock_data_model_industry(stock_data_model_base):
         if table_name is not None:
             self.table_struct = Table(
                 table_name, 
-                self.metadata,
+                self.meta,
                 Column('industry_code', String(100), primary_key=True),
                 Column('industry_type_code', String(100)),
                 Column('industry_name', String(100)),
@@ -109,7 +107,7 @@ class stock_data_model_stock_name(stock_data_model_base):
         if table_name is not None:
             self.table_struct = Table(
                 table_name, 
-                self.metadata,
+                self.meta,
                 Column('stock_code', String(100), primary_key=True),
                 Column('stock_name', String(100)),
                 Column('first_created_date', DateTime),
@@ -125,7 +123,7 @@ class stock_data_model_index_price(stock_data_model_base):
         if table_name is not None:
             self.table_struct = Table(
                 table_name, 
-                self.metadata,
+                self.meta,
                 Column('index_code', String(100)),
                 Column('effective_date', Numeric(10, 0)),
                 Column('high_price', Float(asdecimal=True)),
@@ -150,7 +148,7 @@ class stock_data_model_stock(stock_data_model_base):
         if table_name is not None:
             self.table_struct = Table(
                 table_name, 
-                self.metadata,
+                self.meta,
                 Column('stock_code', String(100), primary_key=True, nullable=False),
                 Column('effective_date', Numeric(10, 0), primary_key=True, nullable=False),
                 Column('price_type_code', Numeric(10, 0)),
@@ -192,7 +190,7 @@ class stock_data_model_stock_price(stock_data_model_base):
         if table_name is not None:
             self.table_struct = Table(
                 'b_stock_reprice', 
-                self.metadata,
+                self.meta,
                 Column('stock_code', String(100), primary_key=True, nullable=False),
                 Column('effective_date', Integer, primary_key=True, nullable=False),
                 Column('price_type_code', Numeric(10, 0)),
@@ -218,7 +216,7 @@ class stock_data_model_stock_industry(stock_data_model_base):
         if table_name is not None:       
             self.table_struct = Table(
                 'b_stock_rs_industry', 
-                self.metadata,
+                self.meta,
                 Column('stock_code', String(100), primary_key=True, nullable=False),
                 Column('industry_code', String(100), primary_key=True, nullable=False),
                 Column('effective_date', Numeric(10, 0), primary_key=True, nullable=False),
@@ -227,3 +225,25 @@ class stock_data_model_stock_industry(stock_data_model_base):
                 Column('last_updated_date', DateTime),
                 Index('b_stock_rs_industry_u1', 'stock_code', 'industry_code', 'effective_date')
             )
+
+
+def import_new_trading_days():
+    from trading_day_list import AllTradingDays
+    trading_day_obj = AllTradingDays()
+    all_days = set(trading_day_obj.get_trading_day_list())
+    
+    reprice = stock_data_model_stock_price()
+    reprice.create_table()
+    stock_days = set([ int(i.effective_date) 
+                        for i in reprice.query_obj(reprice.table_struct,stock_code = '000001.SZ')])
+    
+    print len(all_days)
+    print len(stock_days)
+    
+    new_trading_days = sorted(stock_days - all_days)
+    trading_day_obj.insert_lists(trading_day_obj.table_struct, new_trading_days, merge = True)
+        
+if __name__ == '__main__':
+    
+    import_new_trading_days()
+    

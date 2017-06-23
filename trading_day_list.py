@@ -36,8 +36,8 @@ class Dates(db.DB_BASE):
             table_name,
             self.meta,
             Column('date', Integer, primary_key=True, autoincrement=False),)
-        self.date_struct = self.quick_map(self.table_struct)
-        self.trading_day_obj = self.date_struct
+        self.table_struct = self.quick_map(self.table_struct)
+        self.trading_day_obj = self.table_struct
 
     def get_first_bigger_than(self, idate):
         ss = self.get_session()
@@ -64,7 +64,7 @@ class Dates(db.DB_BASE):
 
     def get_trading_day_list(self):
         ss = self.session()
-        records = ss.query(self.date_struct).all()
+        records = ss.query(self.table_struct).all()
         ss.close()
         return map(lambda x: int(x.date), records)
 
@@ -311,11 +311,11 @@ def set_valid_days(dbname):
 
     #remove all
     if_dates = Dates()
-    all_records = if_dates.query_obj(if_dates.date_struct)
+    all_records = if_dates.query_obj(if_dates.table_struct)
     if_dates.delete_lists_obj(all_records)
 
     #reinsert
-    if_dates.insert_lists(if_dates.date_struct, valids, True)
+    if_dates.insert_lists(if_dates.table_struct, valids, True)
 
 
 def erase_invalid_table(dbname, level='tick'):
