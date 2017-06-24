@@ -17,10 +17,10 @@ class Ticker(object):
         return 'stock'
 
     def id2index(self,ins_id):
-        return self.stock_index.get_stock_index(ins_id)
+        return self.stock_index.insID2index(ins_id)
     
     def name2index(self,ins_name):
-        return self.stock_index.get_stock_index(stock_name2id(ins_name))
+        return self.stock_index.insID2index(stock_name2id(ins_name))
 
     def id2industry(self,ins_id):
         return self.stock_industry.get_ins_name_industry_fast(stock_id2name(ins_id))
@@ -36,11 +36,11 @@ class StockIndex():
         self.index_component = stock_data_model_index_component()
         self.index_component.create_table()
         self.default_ins_set = {}
-        self.hs300_ins_set = self.get_index_component_ins_id(
+        self.hs300_ins_set = self.index2insIDs(
             index_code=self.hs300_code)
-        self.zz500_ins_set = self.get_index_component_ins_id(
+        self.zz500_ins_set = self.index2insIDs(
             index_code=self.zz500_code)
-        self.zz800_ins_set = self.get_index_component_ins_id(
+        self.zz800_ins_set = self.index2insIDs(
             index_code=self.zz800_code)
         self.default_ins_set[self.hs300_code] = self.hs300_ins_set
         self.default_ins_set[self.zz500_code] = self.zz500_ins_set
@@ -59,9 +59,7 @@ class StockIndex():
             if self.stock2index.has_key(ins_id):
                 self.stock2index[ins_id].append(self.hs300_code)
 
-    def get_index_component_ins_id(self,
-                                   index_code=hs300_code,
-                                   ineffective_date=20200000):
+    def index2insIDs(self,index_code=hs300_code,ineffective_date=20200000):
         if not index_code.endswith('.CSI'):
             index_code = index_code + '.CSI'
 
@@ -79,7 +77,7 @@ class StockIndex():
 
         return [i[0].split('.')[0] for i in ret if len(i) > 0]
 
-    def get_stock_index(self, ins_id, ineffective_date=20200000):
+    def insID2index(self, ins_id, ineffective_date=20200000):
         ins_name = stock_id2name(ins_id)
         if ins_id in self.stock2index:
             return self.stock2index[ins_id]
@@ -164,10 +162,10 @@ class StockIndustry():
     
 def test_index():
     stock_index = StockIndex()
-    print len(stock_index.get_index_component_ins_id(stock_index.hs300_code))
-    print len(stock_index.get_index_component_ins_id(stock_index.zz500_code))
-    print len(stock_index.get_index_component_ins_id(stock_index.zz800_code))
-    print stock_index.get_stock_index('000001')
+    print len(stock_index.index2insIDs(stock_index.hs300_code))
+    print len(stock_index.index2insIDs(stock_index.zz500_code))
+    print len(stock_index.index2insIDs(stock_index.zz800_code))
+    print stock_index.insID2index('000001')
 
 
 def test_industry():
@@ -177,16 +175,16 @@ def test_industry():
     #         print sub_df['industry_type_code'].unique()
     print stock_industry.get_industry_info()
     print stock_industry.get_industry_info_fast()
-    print stock_industry.get_ins_name_industry('000001.SZ')
-    print stock_industry.get_ins_name_industry_fast('000001.SZ')
+    print stock_industry.get_ins_name_industry('300002.SZ')
+    print stock_industry.get_ins_name_industry_fast('300002.SZ')
 
 def test_ticker():
     ticker_info = Ticker()
-    print ticker_info.get_id('000001.SZ')
-    print [stock_name2id(i) for i in ticker_info.id2index('000001')]
-    print ticker_info.id2industry('000001')
-    print ticker_info.name2index('000001.SZ')
-    print ticker_info.name2industry('000001.SZ')
+    print ticker_info.get_id('300002.SZ')
+    print [stock_name2id(i) for i in ticker_info.id2index('300002')]
+    print ticker_info.id2industry('300002')
+    print ticker_info.name2index('300002.SZ')
+    print ticker_info.name2industry('300002.SZ')
     
 if __name__ == '__main__':
     test_ticker()

@@ -66,8 +66,8 @@ class DB_BASE(object):
         if not merge:
             session.execute(_class.__table__.insert(), _dicts)
         else:
-            for idict in _dicts:
-                session.merge(_class(**idict))
+            for _idict in _dicts:
+                session.merge(_class(**_idict))
         session.commit()
         session.close()
 
@@ -132,8 +132,8 @@ class DB_BASE(object):
             return False
 
 #         session.execute(table.delete(),_lists)
-        for idict in _lists:
-            objs = session.query(_class).filter_by(**idict).all()
+        for _idict in _lists:
+            objs = session.query(_class).filter_by(**_idict).all()
             for iobj in objs:
                 session.delete(iobj)
         session.flush()
@@ -172,17 +172,17 @@ class DB_UNI_TEST(DB_BASE):
                             'point',
                             Integer,
                             primary_key=True,
-                            autoincrement=False), Column('id', String(45)))
+                            autoincrement=False), Column('_id', String(45)))
         table_struct = self.quick_map(t201301)
 
         print table_struct.__table__.columns
 
-        id = "if"
+        _id = "if"
 
         session = self.get_session()
         all_records = session.query(table_struct).all()
         for irecord in all_records:
-            print irecord.id, irecord.point
+            print irecord._id, irecord.point
             session.delete(irecord)
         session.commit()
         session.close()
@@ -191,8 +191,8 @@ class DB_UNI_TEST(DB_BASE):
 
         dicts = []
         for i in range(10):
-            idict = dict(zip(col_names, (i, id + str(i))))
-            dicts.append(idict)
+            _idict = dict(zip(col_names, (i, _id + str(i))))
+            dicts.append(_idict)
 
         print dicts
         self.insert_dicts(table_struct, dicts, True)
@@ -207,8 +207,8 @@ class DB_UNI_TEST(DB_BASE):
 
         lists = []
         for i in range(20, 30):
-            #             self.insert_listlike(table_struct, (i,id),True)
-            ilist = (i, id + str(i))
+            #             self.insert_listlike(table_struct, (i,_id),True)
+            ilist = (i, _id + str(i))
             lists.append(ilist)
 
         print lists

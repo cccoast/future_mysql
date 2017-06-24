@@ -8,7 +8,7 @@ def stock_id2name(_id):
         return _id + '.CSI'
     elif _id[0] == '6':
         return _id + '.SH'
-    elif _id[0] == '0':
+    elif _id[0] == '0' or _id[0] == '3':
         return _id + '.SZ'
     else:
         return None
