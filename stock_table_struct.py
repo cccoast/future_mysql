@@ -2,24 +2,28 @@ from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 import dbBase as db
 
+
 def stock_id2name(_id):
+    inid = int(_id)
     _id = str(_id)
-    if _id[0] == '9':
+    if inid >= 900000:
         return _id + '.CSI'
-    elif _id[0] == '6':
+    elif inid >= 600000:
         return _id + '.SH'
-    elif _id[0] == '0' or _id[0] == '3':
+    elif inid >= 0:
         return _id + '.SZ'
     else:
         return None
 
 
 def stock_name2id(_id):
-    index = False if ( (not _id.endswith('.SZ')) and (not _id.endswith('.SH')) ) else True
+    index = False if ((not _id.endswith('.SZ')) and
+                      (not _id.endswith('.SH'))) else True
     if index:
         return _id.split('.')[0]
     else:
         return str(900000 + int(_id.split('.')[0]))
+
 
 class stock_data_model_base(db.DB_BASE):
 

@@ -4,6 +4,7 @@ from sqlalchemy import and_, distinct
 import pandas as pd
 from itertools import chain
 
+
 class Ticker(object):
 
     def __init__(self):
@@ -16,17 +17,19 @@ class Ticker(object):
     def get_dbname(self, ticker):
         return 'stock'
 
-    def id2index(self,ins_id):
+    def id2index(self, ins_id):
         return self.stock_index.insID2index(ins_id)
-    
-    def name2index(self,ins_name):
+
+    def name2index(self, ins_name):
         return self.stock_index.insID2index(stock_name2id(ins_name))
 
-    def id2industry(self,ins_id):
-        return self.stock_industry.get_ins_name_industry_fast(stock_id2name(ins_id))
-    
-    def name2industry(self,ins_name):
+    def id2industry(self, ins_id):
+        return self.stock_industry.get_ins_name_industry_fast(
+            stock_id2name(ins_id))
+
+    def name2industry(self, ins_name):
         return self.stock_industry.get_ins_name_industry_fast(ins_name)
+
 
 class StockIndex():
 
@@ -36,12 +39,9 @@ class StockIndex():
         self.index_component = stock_data_model_index_component()
         self.index_component.create_table()
         self.default_ins_set = {}
-        self.hs300_ins_set = self.index2insIDs(
-            index_code=self.hs300_code)
-        self.zz500_ins_set = self.index2insIDs(
-            index_code=self.zz500_code)
-        self.zz800_ins_set = self.index2insIDs(
-            index_code=self.zz800_code)
+        self.hs300_ins_set = self.index2insIDs(index_code=self.hs300_code)
+        self.zz500_ins_set = self.index2insIDs(index_code=self.zz500_code)
+        self.zz800_ins_set = self.index2insIDs(index_code=self.zz800_code)
         self.default_ins_set[self.hs300_code] = self.hs300_ins_set
         self.default_ins_set[self.zz500_code] = self.zz500_ins_set
         self.default_ins_set[self.zz800_code] = self.zz800_ins_set
@@ -59,9 +59,11 @@ class StockIndex():
             if self.stock2index.has_key(ins_id):
                 self.stock2index[ins_id].append(self.hs300_code)
 
-    def index2insIDs(self,index_code=hs300_code,ineffective_date=20200000):
-        if not index_code.endswith('.CSI'):
+    def index2insIDs(self, index_code=hs300_code, ineffective_date=20200000):
+        if not index_code.endswith('.CSI') and not index_code.startswith('9'):
             index_code = index_code + '.CSI'
+        elif index_code.startswith('9'):
+            index_code = stock_id2name(index_code)
 
         if index_code in self.default_ins_set.keys():
             return self.default_ins_set[index_code]
@@ -121,18 +123,20 @@ class StockIndustry():
             industry_type_code=industry_type_code)
         ss.close()
         return [getattr(i, value_field) for i in ret]
-        
+
     def get_industry_info_fast(self,
                                value_field='industry_code',
                                industry_level=1,
                                industry_type_code='ZZ'):
-        return [i[0] for i in 
-                self.industry_df.loc[
-                (self.industry_df['industry_level'] == industry_level) & 
-                (self.industry_df['industry_type_code'] == industry_type_code),
-                [value_field,]].values
-                if len(i) > 0] 
-    
+        return [
+            i[0]
+            for i in self.industry_df.
+            loc[(self.industry_df['industry_level'] == industry_level) & (
+                self.industry_df['industry_type_code'] == industry_type_code), [
+                    value_field,
+                ]].values if len(i) > 0
+        ]
+
     def get_ins_name_industry(self,
                               ins_name,
                               industry_type_code='ZZ',
@@ -147,19 +151,23 @@ class StockIndustry():
             i.industry_code for i in ret
             if i.industry_code.endswith(industry_type_code)
         ]
-    
+
     def get_ins_name_industry_fast(self,
-                              ins_name,
-                              industry_type_code='ZZ',
-                              ineffective_date=20200000):
-        return  [ i[0] for i in 
-                self.industry_stock_df.loc[
-                (self.industry_stock_df['ineffective_date'] >= ineffective_date) &
-                (self.industry_stock_df['stock_code'] == ins_name) &  
-                (self.industry_stock_df['industry_code'].apply(lambda x: x.endswith(industry_type_code))),
-                ['industry_code',]].values
-                if len(i) > 0]
-    
+                                   ins_name,
+                                   industry_type_code='ZZ',
+                                   ineffective_date=20200000):
+        return [
+            i[0]
+            for i in self.industry_stock_df.loc[
+                (self.industry_stock_df['ineffective_date'] >= ineffective_date
+                ) & (self.industry_stock_df['stock_code'] == ins_name) &
+                (self.industry_stock_df['industry_code'].apply(
+                    lambda x: x.endswith(industry_type_code))), [
+                        'industry_code',
+                    ]].values if len(i) > 0
+        ]
+
+
 def test_index():
     stock_index = StockIndex()
     print len(stock_index.index2insIDs(stock_index.hs300_code))
@@ -178,6 +186,7 @@ def test_industry():
     print stock_industry.get_ins_name_industry('300002.SZ')
     print stock_industry.get_ins_name_industry_fast('300002.SZ')
 
+
 def test_ticker():
     ticker_info = Ticker()
     print ticker_info.get_id('300002.SZ')
@@ -185,6 +194,7 @@ def test_ticker():
     print ticker_info.id2industry('300002')
     print ticker_info.name2index('300002.SZ')
     print ticker_info.name2industry('300002.SZ')
-    
+
+
 if __name__ == '__main__':
     test_ticker()
