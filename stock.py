@@ -13,8 +13,11 @@ class Ticker(object):
 
     def get_id(self, ticker):
         return stock_name2id(ticker)
-
-    def get_dbname(self, ticker):
+    
+    def id2name(self, _id):
+        return stock_id2name(_id)
+        
+    def id2dbname(self, ticker):
         return 'stock'
 
     def id2index(self, ins_id):
@@ -60,6 +63,7 @@ class StockIndex():
                 self.stock2index[ins_id].append(self.hs300_code)
 
     def index2insIDs(self, index_code=hs300_code, ineffective_date=20200000):
+        index_code = str(index_code)
         if not index_code.endswith('.CSI') and not index_code.startswith('9'):
             index_code = index_code + '.CSI'
         elif index_code.startswith('9'):
@@ -77,7 +81,7 @@ class StockIndex():
         ret = ret.all()
         ss.close()
 
-        return [i[0].split('.')[0] for i in ret if len(i) > 0]
+        return [int(i[0].split('.')[0]) for i in ret if len(i) > 0]
 
     def insID2index(self, ins_id, ineffective_date=20200000):
         ins_name = stock_id2name(ins_id)
@@ -197,4 +201,5 @@ def test_ticker():
 
 
 if __name__ == '__main__':
-    test_ticker()
+    stock_index = StockIndex()
+    print stock_index.index2insIDs('000300.CSI')

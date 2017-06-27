@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 import pandas as pd
 import numpy as np
 from future_table_struct import data_model_tick, data_model_min, data_model_day, Ticker
+from stock_table_struct import stock_data_model_stock_price
 from itertools import chain
 
 from misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day,\
@@ -25,20 +26,24 @@ def get_all_table_names(dbname):
     ss.close()
     return [j for j in chain(*[i for i in records])]
 
+class AllTradingDays(db.DB_BASE):
 
-class Dates(db.DB_BASE):
-
-    def __init__(self, db_name='dates', table_name='trading_days'):
-
-        super(Dates, self).__init__(db_name)
-
-        self.table_struct = Table(
+    def __init__(self,db_name = 'dates',table_name = 'all_trading_days'):
+        super(AllTradingDays, self).__init__(db_name)
+        self.table_name = table_name
+        table_struct = Table(
             table_name,
             self.meta,
             Column('date', Integer, primary_key=True, autoincrement=False),)
-        self.table_struct = self.quick_map(self.table_struct)
+        self.table_struct = self.quick_map(table_struct)
         self.trading_day_obj = self.table_struct
 
+    def get_trading_day_list(self):
+        ss = self.session()
+        records = ss.query(self.table_struct).all()
+        ss.close()
+        return map(lambda x: int(x.date), records)
+    
     def get_first_bigger_than(self, idate):
         ss = self.get_session()
         ret = ss.query(self.trading_day_obj).filter(
@@ -62,29 +67,24 @@ class Dates(db.DB_BASE):
             ss.close()
             return None
 
-    def get_trading_day_list(self):
-        ss = self.session()
-        records = ss.query(self.table_struct).all()
-        ss.close()
-        return map(lambda x: int(x.date), records)
+class FutureDates(AllTradingDays):
+
+    def __init__(self, db_name='dates', table_name='future_trading_days'):
+        super(FutureDates, self).__init__(db_name,table_name)
 
 
-class AllTradingDays(Dates):
+class StockDates(AllTradingDays):
 
-    def __init__(
-            self,):
-        db_name = 'dates'
-        table_name = 'all_trading_days'
-        super(AllTradingDays, self).__init__(db_name, table_name)
-
-
+    def __init__(self, db_name='dates', table_name='stock_trading_days'):
+        super(StockDates, self).__init__(db_name,table_name)
+    
 class futureOrder(db.DB_BASE):
 
     def __init__(self, ticker, num_of_tickers=None):
 
         if num_of_tickers is None:
             tick_info = Ticker()
-            day = Dates().get_trading_day_list()[0]
+            day = FutureDates().get_trading_day_list()[0]
             num_of_tickers = tick_info.get_num_of_tickers(ticker, day)
 
         ticker = str.lower(ticker[:2])
@@ -106,7 +106,7 @@ class futureOrder(db.DB_BASE):
 
     def get_exchange_rollling_day_cffex(self, weekday=5, nth=2, offset=2):
 
-        dates = Dates()
+        dates = FutureDates()
         trading_days = dates.get_trading_day_list()
         #         #this is a [] set, need not to do the offset
         #         last_trading_day = timestamp2int( pd.to_datetime(str(trading_days[-1])) + pd.to_timedelta(1,unit = 'D'))
@@ -134,7 +134,7 @@ class futureOrder(db.DB_BASE):
         return roll_days_dict
 
     def get_exchange_rollling_day_shfex(self, month_day=15, offset=0):
-        dates = Dates()
+        dates = FutureDates()
         trading_days = dates.get_trading_day_list()
         exchange_rolling_days = get_first_bigger_day_than_special_monthday(
             trading_days, 15)
@@ -159,7 +159,7 @@ class futureOrder(db.DB_BASE):
         #use min tables instead of tick tables to accelerate!
         tick_info = Ticker()
         dbname = tick_info.get_dbname(ticker, 'min')
-        dates = Dates()
+        dates = FutureDates()
         rolling_day = self.get_exchange_rollling_day_cffex(fixed_days)
         exchang_rolling_day = self.get_exchange_rollling_day_cffex(0)
         trading_day_list = dates.get_trading_day_list()
@@ -207,7 +207,7 @@ class futureOrder(db.DB_BASE):
     def set_order_shfex(self,ticker = 'au',method = 'avg_volume_open_interest',\
                             fixed_days = 3,force_reload = False):
 
-        trading_day_list = Dates().get_trading_day_list()
+        trading_day_list = FutureDates().get_trading_day_list()
         tick_info = Ticker()
         dbname = tick_info.get_dbname(ticker, 'day')
         table_name = tick_info.get_table_name(ticker, trading_day_list[0],
@@ -299,7 +299,7 @@ def set_future_order_au(force_reload=False):
     fo.set_order_shfex()
 
 
-def set_valid_days(dbname):
+def set_future_trading_day_list(dbname):
     all_dates = AllTradingDays()
     trading_day_list = all_dates.get_trading_day_list()
     valids = []
@@ -310,14 +310,28 @@ def set_valid_days(dbname):
     print 'valids = ', len(valids)
 
     #remove all
-    if_dates = Dates()
+    if_dates = FutureDates()
     all_records = if_dates.query_obj(if_dates.table_struct)
     if_dates.delete_lists_obj(all_records)
 
     #reinsert
     if_dates.insert_lists(if_dates.table_struct, valids, True)
-
-
+    print 'future trading day list imported!'
+    
+def set_stock_trading_day_list():
+    sql = "SELECT distinct(effective_date) FROM stock.b_stock_reprice where \
+                stock_code = '000001.SZ' order by effective_date;"
+    stock_reprice_model = stock_data_model_stock_price()
+    df = pd.read_sql(sql,stock_reprice_model.engine)
+    print df.head()
+    
+    stock_dates = StockDates()
+    all_records = stock_dates.query_obj(stock_dates.table_struct)
+    stock_dates.delete_lists_obj(all_records)
+    
+    stock_dates.insert_lists(stock_dates.table_struct,[int(i) for i in df['effective_date'].values],True)
+    print 'stock trading day list imported!'
+    
 def erase_invalid_table(dbname, level='tick'):
     tables = get_all_table_names(dbname)
     if level == 'tick':
@@ -338,7 +352,7 @@ def erase_invalid_table(dbname, level='tick'):
 
 
 def adjust_if_days(dbname):
-    set_valid_days(dbname)
+    set_future_trading_day_list(dbname)
     erase_invalid_table(dbname)
     set_future_order_if(force_reload=True)
 
@@ -361,4 +375,5 @@ def check_cffex_shfex_align():
 
 
 if __name__ == '__main__':
-    set_future_order_au()
+    stock_dates = StockDates()
+    print stock_dates.get_trading_day_list()

@@ -2,7 +2,7 @@ import dbBase as db
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 
 from future_table_struct import data_model_tick, data_model_min, data_model_day, Ticker
-from trading_day_list import Dates
+from trading_day_list import FutureDates
 from time2point import DayMode
 from misc import cffex_tickers, run_parelell_tasks
 
@@ -20,7 +20,7 @@ day_columns = ('id','day','OpenPrice','HighPrice',\
 class Sampler(object):
 
     def __init__(self, freq=1):
-        dates = Dates()
+        dates = FutureDates()
         self.trading_days = np.array(
             [int(obj.date) for obj in dates.query_obj(dates.table_struct)])
         self.spots_gap = 120 * freq
