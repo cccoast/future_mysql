@@ -13,7 +13,7 @@ def sorted_dict(indict, sort_value_index=1, reverse=True):
         indict.items(), key=lambda x: x[sort_value_index], reverse=reverse)
 
 
-def run_parelell_tasks(func, iter_args):
+def run_paralell_tasks(func, iter_args):
     tasks = []
     for iarg in iter_args:
         task = Process(target=func, args=(iarg,))

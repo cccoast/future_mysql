@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from future_table_struct import data_model_tick, data_model_min, data_model_day, Ticker
 from trading_day_list import FutureDates
 from time2point import DayMode
-from misc import cffex_tickers, run_parelell_tasks
+from misc import cffex_tickers, run_paralell_tasks
 
 import numpy as np
 import pandas as pd
@@ -111,7 +111,7 @@ class Sampler(object):
                                len(days) / default_subprocess_numbers * i
                                for i in range(1, default_subprocess_numbers)
                            ]))
-        run_parelell_tasks(sample_sub_day_list, sub_day_list)
+        run_paralell_tasks(sample_sub_day_list, sub_day_list)
 
 #         pool = Pool(default_subprocess_numbers)
 #         pool.map(sample_sub_day_list,sub_day_list)
@@ -170,7 +170,7 @@ class Sampler(object):
                                len(days) / default_subprocess_numbers * i
                                for i in range(1, default_subprocess_numbers)
                            ]))
-        run_parelell_tasks(sample_sub_day_list, sub_day_list)
+        run_paralell_tasks(sample_sub_day_list, sub_day_list)
 
 
 def debug_single_day_min(ticker, day=20140314, freq=120):

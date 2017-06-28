@@ -5,7 +5,7 @@ import dbBase as db
 
 def stock_id2name(_id):
     inid = int(_id)
-    _id = str(_id)
+    _id = '{:0>6}'.format(_id)
     if inid >= 900000:
         return _id + '.CSI'
     elif inid >= 600000:
