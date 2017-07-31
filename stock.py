@@ -210,4 +210,5 @@ def test_ticker():
 
 if __name__ == '__main__':
     stock_index = StockIndex()
-    print len(stock_index.index2insIDs('000906.CSI',20100104))
+    print stock_index.index2insIDs('000300.CSI',20100104)
+    print stock_index.index2insIDs('000905.CSI',20100104)

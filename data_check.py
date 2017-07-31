@@ -33,7 +33,6 @@ def get_suspension_days(ipckey, ins_index = 25):
         df.iloc[:,:] = 0
     elif ( len(df.index) < len(trading_day_list) ):
         df = df.reindex(trading_day_list,method = 'pad')
-        df.iloc[0,0] = 0 if np.isnan(df.iloc[0,0]) else df.iloc[0,0]
         df['price_type_code'].fillna(0,inplace=True)
     df['price_type_code'] = df['price_type_code'].astype(np.int)
     a = set(suspension_days)
@@ -86,7 +85,8 @@ def get_data_from_memory(ind_id, ipckey, ins_id, day=None):
         datas = shm_api.fetchDoubleDataList(ind_index, ins_index, start_spot,end_spot)
     else:
         datas = shm_api.fetchIntDataList(ind_index, ins_index, start_spot,end_spot)
-
+    
+    print datas
     plt.plot(datas)
     plt.show()
 
@@ -171,7 +171,15 @@ def test_stock_unadjusted_price(ins_id,ipckey):
     ind_ids = [250, 251, 252, 253]
     for ind_id in ind_ids:
         get_data_from_memory(ind_id,ipckey,ins_id)
-              
+
+def test_stock_all():
+    ins_id = 600030
+    ipckey = '0x0f0f0021'
+    test_stock_basic_indicators(ins_id,ipckey)
+    test_stock_ta_indicators(ins_id,ipckey)
+    test_stock_fundmental_indicators(ins_id,ipckey)
+    test_stock_unadjusted_price(ins_id,ipckey)
+       
 if __name__ == '__main__':
     #     get_table_from_sql_db('cffex_if','20150119')
     #     get_data_from_memory('0x0f0f0005')
@@ -183,9 +191,6 @@ if __name__ == '__main__':
 #     for ins_index in range(800):
 #         get_suspension_days('0x0f0f0017',ins_index)
     
-    ins_id = 600030
-    ipckey = '0x0f0f0021'
-    test_stock_basic_indicators(ins_id,ipckey)
-    test_stock_ta_indicators(ins_id,ipckey)
-    test_stock_fundmental_indicators(ins_id,ipckey)
-    test_stock_unadjusted_price(ins_id,ipckey)
+#     get_data_from_memory(113,'0x0f0f0005',110010001)
+    get_nostruct_data_from_memory('0x0f0f0020','0x0e0e0020')
+    
