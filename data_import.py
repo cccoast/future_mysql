@@ -5,7 +5,7 @@ import numpy as np
 import time2point
 from functools import partial
 from future_table_struct import data_model_tick
-from trading_day_list import AllTradingDays
+from trading_date import AllTradingDays
 from misc import cffex_tickers, shfex_tickers
 
 

@@ -2,7 +2,7 @@ import dbBase as db
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 
 from future_table_struct import data_model_tick, data_model_min, data_model_day, Ticker
-from trading_day_list import FutureDates
+from trading_date import FutureDates
 from time2point import DayMode
 from misc import cffex_tickers, run_paralell_tasks
 

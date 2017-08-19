@@ -127,11 +127,7 @@ def check_adjust(ipckey1, ipckey2):
     spots_count_perday = header.getSpotsCountPerDay()
     from misc import get_nth_specical_weekday_in_daterange
     from itertools import chain
-    weekdays = [
-        i
-        for i in chain(*(get_nth_specical_weekday_in_daterange(
-            20140101, 20151231, 5, 1).values()))
-    ]
+    weekdays = [i for i in chain(*(get_nth_specical_weekday_in_daterange(20140101, 20151231, 5, 1).values()))]
     first_roll_day = weekdays[-1]
     nth_first_roll_day = trading_day_map[first_roll_day]
     ind_index, ins_index = 0, 0

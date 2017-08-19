@@ -283,7 +283,7 @@ class stock_data_model_stock_industry(stock_data_model_base):
 
 
 def import_new_trading_days():
-    from trading_day_list import AllTradingDays
+    from trading_date import AllTradingDays
     trading_day_obj = AllTradingDays()
     all_days = set(trading_day_obj.get_trading_day_list())
 
