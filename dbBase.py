@@ -12,10 +12,10 @@ class DB_BASE(object):
     def __init__(self, db_name):
 
         self.db_name = db_name
-        connect_str = "mysql+pymysql://xudi:123456@127.0.0.1:3306/{0}".format(
+        connect_str = "mysql+pymysql://xudi:123456@127.0.0.1:3306/{0}?charset=utf8".format(
             db_name)
 
-        self.engine = create_engine(connect_str, echo=False)
+        self.engine = create_engine(connect_str, echo=False, encoding = "utf8")
         self.meta = MetaData(bind=self.engine)
         self.session = sessionmaker(bind=self.engine)
 
@@ -48,7 +48,7 @@ class DB_BASE(object):
         self.execute_sql(
             'Drop Table {0}.`{1}`'.format(self.db_name, table_name))
 
-    def insert_data_frame(self, _class, df, merge=False, chunk_size=1024):
+    def insert_data_frame(self, _class, df, merge = False, chunk_size = 1024):
         magic_number = chunk_size
         print len(df)
         if len(df) < magic_number:
@@ -57,7 +57,6 @@ class DB_BASE(object):
             for _begin in range(0, len(df), magic_number):
                 _end = _begin + magic_number if _begin + magic_number < len(
                     df) else len(df)
-                #                 print _begin,_end
                 self.insert_dicts(
                     _class, df.iloc[_begin:_end].to_dict('records'), merge)
 
@@ -147,7 +146,7 @@ class DB_BASE(object):
 
     def get_columns_obj(self, _class):
         return _class.__table__.columns
-
+        
     def get_primary_key(self, _class):
         return _class.__table__.primary_key.columns.keys()
 

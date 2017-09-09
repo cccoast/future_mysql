@@ -86,9 +86,13 @@ def get_data_from_memory(ind_id, ipckey, ins_id, day=None):
     else:
         datas = shm_api.fetchIntDataList(ind_index, ins_index, start_spot,end_spot)
     
+    if len(datas) > 100000:
+        datas = datas[::120]
+        print 'datas too long, sample by 120 spots'
     print datas
     plt.plot(datas)
     plt.show()
+
 
 
 def get_nostruct_data_from_memory(ipckey, nostruct_ipckey):
@@ -187,6 +191,6 @@ if __name__ == '__main__':
 #     for ins_index in range(800):
 #         get_suspension_days('0x0f0f0017',ins_index)
     
-#     get_data_from_memory(113,'0x0f0f0005',110010001)
-    get_nostruct_data_from_memory('0x0f0f0020','0x0e0e0020')
+    get_data_from_memory(0,'0x0f0f0001',110010001)
+#     get_nostruct_data_from_memory('0x0f0f0020','0x0e0e0020')
     

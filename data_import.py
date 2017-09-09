@@ -26,11 +26,7 @@ def SpecialTimeSplit(cookie, time_stamp):
         return int(hh), (int(mm)), int(ss), 500
 
 
-def import_tick_per_month(ticker,
-                          month,
-                          root_path,
-                          start_date,
-                          end_date,
+def import_tick_per_month(ticker,month,root_path,start_date,end_date,
                           force_reload=False):
 
     fspot = time2point.DayMode()
@@ -77,11 +73,7 @@ def import_tick_per_month(ticker,
 
         for ins, infile in zip(inss, infiles):
             print ins
-            df = pd.read_csv(
-                os.path.join(idir, infile),
-                index_col=None,
-                usecols=[0, 1, 3, 4, 5, 6, 7, 8],
-                parse_dates=False)
+            df = pd.read_csv(os.path.join(idir, infile),index_col=None,usecols=[0, 1, 3, 4, 5, 6, 7, 8],parse_dates=False)
             #some data source file may be in wrong format
             if len(df) < 1:
                 continue
@@ -95,10 +87,9 @@ def import_tick_per_month(ticker,
 
             df['spot'] = df['Time'].apply(split_time_func).apply(ftime2spot)
             df['day'] = pd.Series([day] * len(df), index=df.index)
-            df['id'] = pd.Series(
-                [infile.split('.')[0]] * len(df), index=df.index)
+            df['id'] = pd.Series([infile.split('.')[0]] * len(df), index=df.index)
 
-            #             print df.head()
+            #print df.head()
             df.sort_values(by='spot', axis=0, inplace=True)
             df.drop_duplicates('spot', keep='first', inplace=True)
             df.index = df['spot']
@@ -112,8 +103,7 @@ def import_tick_per_month(ticker,
             df.ix[df['AskVolume'] < 0.01, 'AskPrice'] = np.nan
 
             #take care here, some inactive contrace may not have ask/bid volume at first
-            first_one = np.max(
-                df.apply(lambda x: x.first_valid_index(), axis=0))
+            first_one = np.max(df.apply(lambda x: x.first_valid_index(), axis=0))
             df = df.reindex(xrange(spots_count_perday), method='pad')
 
             df.fillna(method='pad', inplace=True)
@@ -138,20 +128,11 @@ def import_tick_per_month(ticker,
                 else:
                     replaced.append('Volume')
             df.columns = replaced
-            #             print df.head()
-            #             start = time.time()
-            #             new_records.insert_data_frame(new_records.tick_struct, df, merge = False)
-            df.to_sql(
-                str(day),
-                new_records.engine,
-                index=False,
-                if_exists='append',
-                chunksize=8192)
 
+            df.to_sql(str(day),new_records.engine,index=False,if_exists='append',chunksize=8192)
 
 #             end = time.time()
 #             print 'elapsed = ', end - start
-
 
 def import_cffex_if(year, month):
 

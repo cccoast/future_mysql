@@ -189,20 +189,16 @@ class futureOrder(db.DB_BASE):
             print date, rolling_day[year][month], exchang_rolling_day[year][
                 month]
             if method == 'fixed_days':
-                sql = 'select distinct id from {}.{} order by id;'.format(
-                    dbname, str(date))
+                sql = 'select distinct id from {}.{} order by id;'.format(dbname, str(date))
                 tickers = cffex_table_obj.execute_sql(sql)
                 orders = [irec[0] for irec in tickers]
                 if date > int(rolling_day[year][month]) and date <= int(
                         exchang_rolling_day[year][month]):
                     orders[0], orders[1] = orders[1], orders[0]
-                to_be_inserted = [
-                    date,
-                ]
+                to_be_inserted = [date,]
                 to_be_inserted.extend(orders)
                 print to_be_inserted
-                self.insert_listlike(self.future_order_struct, to_be_inserted,
-                                     True)
+                self.insert_listlike(self.future_order_struct, to_be_inserted,True)
 
     def set_order_shfex(self,ticker = 'au',method = 'avg_volume_open_interest',\
                             fixed_days = 3,force_reload = False):
@@ -253,21 +249,15 @@ class futureOrder(db.DB_BASE):
                 consider_days = set([
                     trading_day_list[nth_day - i] for i in range(forward_days)
                 ])
-                sub_df = df.ix[df['day'].apply(lambda x: x in consider_days),
-                               ['id', 'Volume', 'OpenInterest']]
+                sub_df = df.ix[df['day'].apply(lambda x: x in consider_days),['id', 'Volume', 'OpenInterest']]
                 vol_dict = {}
                 for real_ticker_id, sub_sub_df in sub_df.groupby('id'):
-                    vol_dict[real_ticker_id] = sub_sub_df[sub_sub_df.columns[
-                        1:3]].sum().sum()
-                vol_list = sorted(
-                    vol_dict.items(), key=lambda x: x[1], reverse=True)
+                    vol_dict[real_ticker_id] = sub_sub_df[sub_sub_df.columns[1:3]].sum().sum()
+                vol_list = sorted(vol_dict.items(), key=lambda x: x[1], reverse=True)
                 order = [pair[0] for pair in vol_list]
-                to_be_inserted = [
-                    date,
-                ]
+                to_be_inserted = [date,]
                 to_be_inserted.extend(order)
-                self.insert_listlike(self.future_order_struct, to_be_inserted,
-                                     True)
+                self.insert_listlike(self.future_order_struct, to_be_inserted,True)
 
 
 def import_trading_days():

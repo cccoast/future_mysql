@@ -90,28 +90,13 @@ class stock_data_model_index_component(stock_data_model_base):
         if table_name is not None:
             self.table_name = table_name
             self.table_struct = Table(table_name, self.meta,
-                                      Column(
-                                          'index_code',
-                                          String(100),
-                                          primary_key=True,
-                                          nullable=False),
-                                      Column(
-                                          'instrument_code',
-                                          String(100),
-                                          primary_key=True,
-                                          nullable=False),
-                                      Column(
-                                          'effective_date',
-                                          Numeric(10, 0),
-                                          primary_key=True,
-                                          nullable=False),
-                                      Column('ineffective_date', Numeric(10,
-                                                                         0)),
+                                      Column('index_code',String(100),primary_key=True,nullable=False),
+                                      Column('instrument_code',String(100),primary_key=True,nullable=False),
+                                      Column('effective_date',Numeric(10, 0),primary_key=True,nullable=False),
+                                      Column('ineffective_date', Numeric(10,0)),
                                       Column('first_created_date', DateTime),
                                       Column('last_updated_date', DateTime),
-                                      Index('b_index_component_u1',
-                                            'index_code', 'instrument_code',
-                                            'effective_date'))
+                                      Index('b_index_component_u1','index_code', 'instrument_code','effective_date'))
 
 
 class stock_data_model_industry(stock_data_model_base):
@@ -141,10 +126,7 @@ class stock_data_model_stock_name(stock_data_model_base):
         if table_name is not None:
             self.table_name = table_name
             self.table_struct = Table(table_name, self.meta,
-                                      Column(
-                                          'stock_code',
-                                          String(100),
-                                          primary_key=True),
+                                      Column('stock_code',String(100),primary_key=True),
                                       Column('stock_name', String(100)),
                                       Column('first_created_date', DateTime),
                                       Column('last_updated_date', DateTime))
@@ -183,14 +165,8 @@ class stock_data_model_stock(stock_data_model_base):
             self.table_name = table_name
             self.table_struct = Table(
                 table_name, self.meta,
-                Column(
-                    'stock_code', String(100), primary_key=True,
-                    nullable=False),
-                Column(
-                    'effective_date',
-                    Numeric(10, 0),
-                    primary_key=True,
-                    nullable=False),
+                Column('stock_code', String(100), primary_key=True,nullable=False),
+                Column('effective_date',Numeric(10, 0),primary_key=True,nullable=False),
                 Column('price_type_code', Numeric(10, 0)),
                 Column('high_price', Float(asdecimal=True)),
                 Column('open_price', Float(asdecimal=True)),
@@ -230,12 +206,8 @@ class stock_data_model_stock_price(stock_data_model_base):
             self.table_name = table_name
             self.table_struct = Table(
                 'b_stock_reprice', self.meta,
-                Column(
-                    'stock_code', String(100), primary_key=True,
-                    nullable=False),
-                Column(
-                    'effective_date', Integer, primary_key=True,
-                    nullable=False),
+                Column('stock_code', String(100), primary_key=True,nullable=False),
+                Column('effective_date', Integer, primary_key=True,nullable=False),
                 Column('price_type_code', Numeric(10, 0)),
                 Column('high_price', Float(asdecimal=True)),
                 Column('open_price', Float(asdecimal=True)),
@@ -258,28 +230,13 @@ class stock_data_model_stock_industry(stock_data_model_base):
         if table_name is not None:
             self.table_name = table_name
             self.table_struct = Table(table_name, self.meta,
-                                      Column(
-                                          'stock_code',
-                                          String(100),
-                                          primary_key=True,
-                                          nullable=False),
-                                      Column(
-                                          'industry_code',
-                                          String(100),
-                                          primary_key=True,
-                                          nullable=False),
-                                      Column(
-                                          'effective_date',
-                                          Numeric(10, 0),
-                                          primary_key=True,
-                                          nullable=False),
-                                      Column('ineffective_date', Numeric(10,
-                                                                         0)),
+                                      Column('stock_code',String(100),primary_key=True,nullable=False),
+                                      Column('industry_code',String(100), primary_key=True,nullable=False),
+                                      Column('effective_date',Numeric(10, 0),primary_key=True,nullable=False),
+                                      Column('ineffective_date', Numeric(10,0)),
                                       Column('first_created_date', DateTime),
                                       Column('last_updated_date', DateTime),
-                                      Index('b_stock_rs_industry_u1',
-                                            'stock_code', 'industry_code',
-                                            'effective_date'))
+                                      Index('b_stock_rs_industry_u1','stock_code', 'industry_code','effective_date'))
 
 
 def import_new_trading_days():
