@@ -25,26 +25,20 @@ class Sampler(object):
             [int(obj.date) for obj in dates.query_obj(dates.table_struct)])
         self.spots_gap = 120 * freq
 
-    def sample_min(self,
-                   ticker,
-                   start_date=None,
-                   end_date=None,
-                   force_reload=False):
+    def sample_min(self, ticker, start_date=None, end_date=None, force_reload=False):
 
         ticker = ticker[:2]
         days = []
         if start_date is not None:
             days = self.trading_days[np.where(
-                np.all(self.trading_days >= int(start_date), self.trading_days <
-                       int(end_date)))]
+                np.all(self.trading_days >= int(start_date), self.trading_days < int(end_date)))]
         else:
             days = self.trading_days
 
         day_mode = DayMode()
         ticker_info = Ticker()
 
-        total_spots_tick = day_mode.cffex_last if ticker[:
-                                                         2] in cffex_tickers else day_mode.other_last
+        total_spots_tick = day_mode.cffex_last if ticker[:2] in cffex_tickers else day_mode.other_last
         total_spots_min = int(total_spots_tick / self.spots_gap)
         db_name_min = ticker_info.get_dbname(ticker, level='min')
         db_name_tick = ticker_info.get_dbname(ticker, level='tick')
@@ -64,8 +58,7 @@ class Sampler(object):
                         continue
                     print iday
                     min_table.create_table()
-                    tick_df_all = pd.read_sql_table(
-                        str(iday), tick_table.engine, index_col=['spot'])
+                    tick_df_all = pd.read_sql_table(str(iday), tick_table.engine, index_col=['spot'])
                     #                 print tick_df.head()
                     for id, tick_df in tick_df_all.groupby('id'):
 
@@ -75,39 +68,20 @@ class Sampler(object):
                         min_df.ix[:, 'day'] = iday
                         min_df.ix[:, 'spot'] = min_df.index
 
-                        for tick_spot in xrange(
-                                0, total_spots_tick - self.spots_gap,
-                                self.spots_gap):
+                        for tick_spot in xrange(0, total_spots_tick - self.spots_gap,self.spots_gap):
                             min_spot = tick_spot / self.spots_gap
-                            min_df.ix[min_spot, 'Time'] = tick_df.ix[
-                                tick_spot, 'Time'].split('.')[0]
-                            min_df.ix[min_spot, 'OpenPrice'] = float(
-                                tick_df.ix[tick_spot, 'LastPrice'])
-                            min_df.ix[min_spot, 'HighPrice'] = float(
-                                tick_df.ix[tick_spot:tick_spot + self.spots_gap
-                                           - 1, 'LastPrice'].max())
-                            min_df.ix[min_spot, 'LowPrice'] = float(
-                                tick_df.ix[tick_spot:tick_spot + self.spots_gap
-                                           - 1, 'LastPrice'].min())
-                            min_df.ix[min_spot, 'ClosePrice'] = float(
-                                tick_df.ix[tick_spot + self.spots_gap - 1,
-                                           'LastPrice'])
-                            min_df.ix[min_spot, 'Volume'] = int(
-                                tick_df.ix[tick_spot + self.spots_gap - 1,
-                                           'Volume'])
-                            min_df.ix[min_spot, 'OpenInterest'] = int(
-                                tick_df.ix[tick_spot + self.spots_gap - 1,
-                                           'OpenInterest'])
+                            min_df.ix[min_spot, 'Time'] = tick_df.ix[tick_spot, 'Time'].split('.')[0]
+                            min_df.ix[min_spot, 'OpenPrice'] = float(tick_df.ix[tick_spot, 'LastPrice'])
+                            min_df.ix[min_spot, 'HighPrice'] = float(tick_df.ix[tick_spot:tick_spot + self.spots_gap - 1, 'LastPrice'].max())
+                            min_df.ix[min_spot, 'LowPrice'] = float( tick_df.ix[tick_spot:tick_spot + self.spots_gap - 1, 'LastPrice'].min())
+                            min_df.ix[min_spot, 'ClosePrice'] = float(tick_df.ix[tick_spot + self.spots_gap - 1,'LastPrice'])
+                            min_df.ix[min_spot, 'Volume'] = int(tick_df.ix[tick_spot + self.spots_gap - 1,'Volume'])
+                            min_df.ix[min_spot, 'OpenInterest'] = int(tick_df.ix[tick_spot + self.spots_gap - 1,'OpenInterest'])
 
-                        min_df.to_sql(
-                            str(iday),
-                            min_table.engine,
-                            index=False,
-                            if_exists='append')
+                        min_df.to_sql(str(iday),min_table.engine,index=False,if_exists='append')
 
         #start multiprocessing
-        sub_day_list = map(list,
-                           np.split(days, [
+        sub_day_list = map(list,np.split(days, [
                                len(days) / default_subprocess_numbers * i
                                for i in range(1, default_subprocess_numbers)
                            ]))
@@ -128,7 +102,7 @@ class Sampler(object):
         db_name_min = ticker_info.get_dbname(ticker, level='min')
         db_name_day = ticker_info.get_dbname(ticker, level='day')
         table_name = ticker
-
+        print db_name_day, table_name
         day_table = data_model_day(db_name_day, table_name)
         if force_reload and day_table.check_table_exist():
             print '[warning] drop day table [{}]'.format(table_name)
@@ -149,24 +123,16 @@ class Sampler(object):
                         str(iday), min_table.engine, index_col=['spot'])
                     for ticker_id, min_df in min_df_all.groupby('id'):
                         open_price = float(min_df.ix[0, 'OpenPrice'])
-                        close_price = float(
-                            min_df.ix[len(min_df) - 1, 'ClosePrice'])
+                        close_price = float(min_df.ix[len(min_df) - 1, 'ClosePrice'])
                         high_price = float(min_df['HighPrice'].max())
                         low_price = float(min_df['LowPrice'].min())
                         volume = int(min_df.ix[len(min_df) - 1, 'Volume'])
-                        open_interest = int(
-                            min_df.ix[len(min_df) - 1, 'OpenInterest'])
-                        to_be_inserted_list = (ticker_id,int(iday),open_price,high_price,low_price,\
-                                                    close_price,volume,open_interest)
-                        to_be_inserted_dict = dict(
-                            zip(day_columns, to_be_inserted_list))
-                        day_table.insert_dictlike(
-                            day_table.day_struct,
-                            to_be_inserted_dict,
-                            merge=True)
+                        open_interest = int(min_df.ix[len(min_df) - 1, 'OpenInterest'])
+                        to_be_inserted_list = (ticker_id,int(iday),open_price,high_price,low_price,close_price,volume,open_interest)
+                        to_be_inserted_dict = dict(zip(day_columns, to_be_inserted_list))
+                        day_table.insert_dictlike(day_table.day_struct,to_be_inserted_dict,merge=True)
 
-        sub_day_list = map(list,
-                           np.split(days, [
+        sub_day_list = map(list,np.split(days, [
                                len(days) / default_subprocess_numbers * i
                                for i in range(1, default_subprocess_numbers)
                            ]))
@@ -215,11 +181,12 @@ def debug_single_day_min(ticker, day=20140314, freq=120):
 
         print min_df.head()
 
-
-if __name__ == '__main__':
-
+def init():
     sampler = Sampler()
-    #     sampler.sample_min('au',force_reload = False)
+    sampler.sample_min('au',force_reload = False)
     sampler.sample_day('au', force_reload=True)
 
-#     debug_single_day_min('au',day = 20140314)
+if __name__ == '__main__':
+    sampler = Sampler()
+#     sampler.sample_min('if',force_reload = False)
+    sampler.sample_day('if', force_reload=True)

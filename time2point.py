@@ -128,7 +128,6 @@ class DayMode(object):
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
     mode = DayMode()
     print mode.get_cffex_break_info()
     print mode.get_other_break_info()

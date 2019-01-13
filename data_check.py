@@ -8,7 +8,6 @@ from stock import Ticker as StockTicker
 from misc import run_paralell_tasks
 import ShmPython
 
-
 def get_suspension_days(ipckey, ins_index = 25):
     #from shm api
     shm_api = ShmPython.Shm(ipckey)
@@ -61,7 +60,6 @@ def check_trading_day_list(ipckey):
 
 
 def get_data_from_memory(ind_id, ipckey, ins_id, day=None):
-
     shm_api = ShmPython.Shm(ipckey)
     shm_header = shm_api.getHeader()
     ins_index = shm_api.id2index_ins(ins_id)

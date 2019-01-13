@@ -152,7 +152,7 @@ def get_import_path(ticker,year,month):
             if month <= 2:
                 import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX201601-201602/{}{:0>2}/IF'.format(year,month)
             else:
-                import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_201603/CFFEX/{}{:0>2}/IF'.format(year,month)
+                import_path = r'/media/xudi/software/future/data/CFFEX/CFFEX_{}{:0>2}/CFFEX/{}{:0>2}/IF'.format(year,month,year,month)
     elif ticker == 'au':
         if year == 2013:
             import_path = r'/media/xudi/software/future/data/SHFE/SHFE201301-201312/{}{:0>2}/AU'.format(year,month)
@@ -171,10 +171,10 @@ def import_shfex_au(year, month, start_date = None, end_date = None, force_reloa
     import_tick_per_month('au',year * 100 + month,import_path,start_date,end_date,force_reload=force_reload)
 
 
+def init():
+    init_str = r'python data_import -type=if -year=2013 -month=1'
+
 if __name__ == '__main__':
-
-    #import_shfex_au(2014, 2, force_reload=True)
-
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-type',dest='type', nargs='?', type=str)
