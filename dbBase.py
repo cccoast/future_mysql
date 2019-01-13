@@ -215,5 +215,7 @@ class DB_UNI_TEST(DB_BASE):
 
 
 if __name__ == '__main__':
-    uni_test = DB_UNI_TEST('data_model_tick')
-    uni_test.show()
+    dbapi = DB_UNI_TEST('citic_bank')
+    import pandas as pd
+    df = pd.read_sql('reserve',dbapi.engine)
+    print df.head()

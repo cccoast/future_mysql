@@ -261,7 +261,6 @@ class futureOrder(db.DB_BASE):
 
 
 def import_trading_days():
-
     infile = r'/media/xudi/software/future/dates.csv'
     df = pd.read_csv(infile, parse_dates=[0])
     df['date'] = df['date'].apply(
@@ -365,5 +364,6 @@ def check_cffex_shfex_align():
 
 
 if __name__ == '__main__':
-    stock_dates = StockDates()
-    print stock_dates.get_trading_day_list()
+#     stock_dates = StockDates()
+#     print stock_dates.get_trading_day_list()
+    import_trading_days()

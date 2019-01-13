@@ -1,3 +1,4 @@
+#coding:utf-8
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 import dbBase as db
@@ -259,6 +260,16 @@ def import_new_trading_days():
     trading_day_obj.insert_lists(
         trading_day_obj.table_struct, new_trading_days, merge=True)
 
+def import_database():
+    src_path = r'/media/xudi/software/stock/phData/das'
+    import os
+    sqls = [ i for i in os.listdir(src_path) if i.endswith('.sql') ]
+    cmd  = r'mysql -uxudi -p123456 stock < {}'
+    os.chdir(src_path)
+    for sql in sqls: 
+        print sql
+        os.system(cmd.format(sql))
+    print 'done'
 
 if __name__ == '__main__':
-    pass
+    import_database()

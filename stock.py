@@ -208,7 +208,18 @@ def test_ticker():
     print ticker_info.name2index('300002.SZ')
     print ticker_info.name2industry('300002.SZ')
 
-if __name__ == '__main__':
+def test_convert():
     stock_index = StockIndex()
     print stock_index.index2insIDs('000300.CSI',20100104)
     print stock_index.index2insIDs('000905.CSI',20100104)
+
+
+def unitest():
+    test_convert()
+    test_index()
+    test_industry()
+    test_ticker()
+
+if __name__ == '__main__':
+    unitest()
+    
