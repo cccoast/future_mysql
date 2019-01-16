@@ -48,9 +48,8 @@ def get_table_from_sql_db(db_name, table_name):
     #     dtype = {1:np.float,2:np.float,4:np.float,3:np.int,5:np.int,6:np.int,7:np.int}
     table = data_model_tick(db_name, table_name)
     df = pd.read_sql_table(table_name, table.engine)
-    print [type(df.iloc[0][i]) for i in df.columns]
-    print isinstance(df.iloc[0]['BidPrice'], np.float64)
-    print df.head()
+    plt.plot(df.loc[df['day'] > 20160101 ]['ClosePrice'])
+    plt.show()
 
 
 def check_trading_day_list(ipckey):
@@ -59,11 +58,11 @@ def check_trading_day_list(ipckey):
     print trading_day_list
 
 
-def get_data_from_memory(ind_id, ipckey, ins_id, day=None):
+def get_data_from_memory(ind_id, ipckey, ins_id, start_date, end_date, day = None):
     shm_api = ShmPython.Shm(ipckey)
     shm_header = shm_api.getHeader()
     ins_index = shm_api.id2index_ins(ins_id)
-    trading_day_list = pd.Series(shm_api.getTradingDayList())
+    trading_day_list = [ i for i in pd.Series(shm_api.getTradingDayList()) if start_date < i < end_date ]
     spots_count_perday = shm_header.getSpotsCountPerDay()
     spots_count = shm_header.getSpotsCount()
     if day is not None:
@@ -90,7 +89,6 @@ def get_data_from_memory(ind_id, ipckey, ins_id, day=None):
     print datas
     plt.plot(datas)
     plt.show()
-
 
 
 def get_nostruct_data_from_memory(ipckey, nostruct_ipckey):
@@ -188,7 +186,7 @@ if __name__ == '__main__':
     
 #     for ins_index in range(800):
 #         get_suspension_days('0x0f0f0017',ins_index)
-    
-    get_data_from_memory(0,'0x0f0f0001',110010001)
+    get_table_from_sql_db('cffex_day','if')
+#     get_data_from_memory(0,'0x0f0f0000',110010001,20160101,20170101)
 #     get_nostruct_data_from_memory('0x0f0f0020','0x0e0e0020')
     

@@ -200,7 +200,7 @@ class Ticker(object):
         ticker = str.lower(ticker[:2])
         dbname = self.get_dbname(ticker, 'day')
         table_name = self.get_table_name(ticker, day, level='day')
-        print dbname, table_name
+        #print dbname, table_name
         table = data_model_day(dbname, table_name)
         if table.check_table_exist():
             table.create_table()

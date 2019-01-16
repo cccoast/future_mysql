@@ -72,7 +72,6 @@ class FutureDates(AllTradingDays):
     def __init__(self, db_name='dates', table_name='future_trading_days'):
         super(FutureDates, self).__init__(db_name,table_name)
 
-
 class StockDates(AllTradingDays):
 
     def __init__(self, db_name='dates', table_name='stock_trading_days'):
@@ -331,14 +330,20 @@ def check_cffex_shfex_align():
 
 
 def init():
-    import_trading_days()
+#     import_trading_days()
+    print 'set if trading_days && order'
     set_future_trading_day_list('cffex_if')
-    set_future_trading_day_list('shfex_au')
-    set_stock_trading_day_list()
     erase_invalid_table('cffex_if')
-    erase_invalid_table('shfex_au')
-
-if __name__ == '__main__':
     set_future_order_if()
-    set_future_order_au()
+    
+#     print 'set au trading_days && order'
+#     set_future_trading_day_list('shfex_au')
+#     erase_invalid_table('shfec_au')
+#     set_future_order_au()
+
+#     print 'set stock trading_days'
+#     set_stock_trading_day_list
+    
+if __name__ == '__main__':
+    init()
     

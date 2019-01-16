@@ -25,13 +25,12 @@ class Sampler(object):
             [int(obj.date) for obj in dates.query_obj(dates.table_struct)])
         self.spots_gap = 120 * freq
 
-    def sample_min(self, ticker, start_date=None, end_date=None, force_reload=False):
+    def sample_min(self, ticker, start_date= None, end_date= None, force_reload=False):
 
         ticker = ticker[:2]
         days = []
         if start_date is not None:
-            days = self.trading_days[np.where(
-                np.all(self.trading_days >= int(start_date), self.trading_days < int(end_date)))]
+            days = [i for i in self.trading_days if start_date < i < end_date ]
         else:
             days = self.trading_days
 
@@ -188,5 +187,5 @@ def init():
 
 if __name__ == '__main__':
     sampler = Sampler()
-#     sampler.sample_min('if',force_reload = False)
-    sampler.sample_day('if', force_reload=True)
+    sampler.sample_min('if', start_date = 20130900, end_date = 20130932, force_reload = False)
+    sampler.sample_day('if', force_reload = True)
