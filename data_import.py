@@ -103,6 +103,7 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date,
             #if bid/ask price is other text type,
             df.ix[df['BidVolume'] < 0.01, 'BidPrice'] = np.nan
             df.ix[df['AskVolume'] < 0.01, 'AskPrice'] = np.nan
+            df.ix[df['LastPrice'] < 0.01, 'LastPrice'] = np.nan
 
             #take care here, some inactive contrace may not have ask/bid volume at first
             first_one = np.max(df.apply(lambda x: x.first_valid_index(), axis=0))

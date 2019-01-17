@@ -54,7 +54,7 @@ def get_table_from_sql_db(db_name, table_name):
         except:
             table = data_model_tick(db_name, table_name)
     df = pd.read_sql_table(table_name, table.engine)
-    plt.plot(df['ClosePrice'])
+    plt.plot(df['HighPrice'])
     plt.show()
 
 
@@ -194,6 +194,6 @@ if __name__ == '__main__':
 #         get_suspension_days('0x0f0f0017',ins_index)
 #     get_table_from_sql_db('shfex_day','au')
     get_table_from_sql_db('cffex_day','if')
-#     get_data_from_memory(0,'0x0f0f0000',110010001,20160101,20170101)
-#     get_nostruct_data_from_memory('0x0f0f0020','0x0e0e0020')
+#     get_data_from_memory(0,'0x0f0f0000',110010001,20130101,20170101)
+#     get_nostruct_data_from_memory('0x0f0f0000','0x0e0e0000')
     
