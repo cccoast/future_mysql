@@ -331,15 +331,15 @@ def check_cffex_shfex_align():
 
 def init():
 #     import_trading_days()
-    print 'set if trading_days && order'
-    set_future_trading_day_list('cffex_if')
-    erase_invalid_table('cffex_if')
-    set_future_order_if()
+#     print 'set if trading_days && order'
+#     set_future_trading_day_list('cffex_if')
+#     erase_invalid_table('cffex_if')
+#     set_future_order_if()
     
-#     print 'set au trading_days && order'
+    print 'set au trading_days && order'
 #     set_future_trading_day_list('shfex_au')
-#     erase_invalid_table('shfec_au')
-#     set_future_order_au()
+#     erase_invalid_table('shfex_au')
+    set_future_order_au()
 
 #     print 'set stock trading_days'
 #     set_stock_trading_day_list

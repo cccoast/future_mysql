@@ -9,7 +9,7 @@ from misc import cffex_tickers, run_paralell_tasks
 import numpy as np
 import pandas as pd
 
-default_subprocess_numbers = 4
+default_subprocess_numbers = 1
 
 min_columns = ('id','day','spot','Time','OpenPrice','HighPrice',\
                             'ClosePrice','LowPrice','Volume','OpenInterest')
@@ -182,10 +182,10 @@ def debug_single_day_min(ticker, day=20140314, freq=120):
 
 def init():
     sampler = Sampler()
-    sampler.sample_min('au',force_reload = False)
-    sampler.sample_day('au', force_reload=True)
+    sampler.sample_min('if', start_date = 20160605, end_date = 20160610, force_reload = False)
+    sampler.sample_day('if', force_reload = True)
 
 if __name__ == '__main__':
     sampler = Sampler()
-    sampler.sample_min('if', start_date = 20130900, end_date = 20130932, force_reload = False)
-    sampler.sample_day('if', force_reload = True)
+    sampler.sample_min('au', start_date = 20160605, end_date = 20160610, force_reload = False)
+    sampler.sample_day('au', force_reload = True)

@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from future_table_struct import data_model_tick
+from future_table_struct import data_model_tick,data_model_min,data_model_day
 from stock_table_struct import stock_data_model_stock_price
 import matplotlib.pyplot as plt
 from itertools import chain
@@ -46,9 +46,15 @@ def get_suspension_days(ipckey, ins_index = 25):
      
 def get_table_from_sql_db(db_name, table_name):
     #     dtype = {1:np.float,2:np.float,4:np.float,3:np.int,5:np.int,6:np.int,7:np.int}
-    table = data_model_tick(db_name, table_name)
+    try:
+        table = data_model_day(db_name, table_name)
+    except:
+        try:
+            table = data_model_min(db_name, table_name)
+        except:
+            table = data_model_tick(db_name, table_name)
     df = pd.read_sql_table(table_name, table.engine)
-    plt.plot(df.loc[df['day'] > 20160101 ]['ClosePrice'])
+    plt.plot(df['ClosePrice'])
     plt.show()
 
 
@@ -186,6 +192,7 @@ if __name__ == '__main__':
     
 #     for ins_index in range(800):
 #         get_suspension_days('0x0f0f0017',ins_index)
+#     get_table_from_sql_db('shfex_day','au')
     get_table_from_sql_db('cffex_day','if')
 #     get_data_from_memory(0,'0x0f0f0000',110010001,20160101,20170101)
 #     get_nostruct_data_from_memory('0x0f0f0020','0x0e0e0020')
