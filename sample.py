@@ -184,8 +184,12 @@ def init():
     sampler = Sampler()
     sampler.sample_min('if', start_date = 20160605, end_date = 20160610, force_reload = False)
     sampler.sample_day('if', force_reload = True)
-
-if __name__ == '__main__':
+    
     sampler = Sampler()
     sampler.sample_min('au', start_date = 20160605, end_date = 20160610, force_reload = False)
     sampler.sample_day('au', force_reload = True)
+    
+if __name__ == '__main__':
+    sampler = Sampler()
+    sampler.sample_min('if', start_date = 20160101, end_date = 20160610, force_reload = False)
+    sampler.sample_day('if', force_reload = True)

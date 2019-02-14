@@ -193,7 +193,7 @@ if __name__ == '__main__':
 #     for ins_index in range(800):
 #         get_suspension_days('0x0f0f0017',ins_index)
 #     get_table_from_sql_db('shfex_day','au')
-    get_table_from_sql_db('cffex_day','if')
-#     get_data_from_memory(0,'0x0f0f0000',110010001,20130101,20170101)
+#     get_table_from_sql_db('cffex_day','if')
+    get_data_from_memory(0,'0x0f0f0000',110010001,20130101,20170101)
 #     get_nostruct_data_from_memory('0x0f0f0000','0x0e0e0000')
     
