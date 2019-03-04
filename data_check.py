@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from itertools import chain
 from stock import Ticker as StockTicker
 from misc import run_paralell_tasks
-import ShmPython
+# import ShmPython
+import ShmPybind as ShmPython
 
 def get_suspension_days(ipckey, ins_index = 25):
     #from shm api
