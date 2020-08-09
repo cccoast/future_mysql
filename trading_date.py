@@ -46,8 +46,7 @@ class AllTradingDays(db.DB_BASE):
     
     def get_first_bigger_than(self, idate):
         ss = self.get_session()
-        ret = ss.query(self.trading_day_obj).filter(
-            self.trading_day_obj.date >= int(idate)).first()
+        ret = ss.query(self.trading_day_obj).filter(self.trading_day_obj.date >= int(idate)).first()
         if ret:
             ss.close()
             return ret.date
@@ -68,13 +67,13 @@ class AllTradingDays(db.DB_BASE):
             return None
 
 class FutureDates(AllTradingDays):
-
-    def __init__(self, db_name='dates', table_name='future_trading_days'):
+    #table_name='future_trading_days'
+    def __init__(self, db_name='dates', table_name='all_trading_days'):
         super(FutureDates, self).__init__(db_name,table_name)
 
 class StockDates(AllTradingDays):
-
-    def __init__(self, db_name='dates', table_name='stock_trading_days'):
+    #table_name='future_trading_days'
+    def __init__(self, db_name='dates', table_name='all_trading_days'):
         super(StockDates, self).__init__(db_name,table_name)
     
 class futureOrder(db.DB_BASE):
@@ -345,5 +344,6 @@ def init():
 #     set_stock_trading_day_list
     
 if __name__ == '__main__':
-    init()
+    days = AllTradingDays()
+    print days.get_first_bigger_than(20090101)
     

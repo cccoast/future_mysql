@@ -28,8 +28,7 @@ class Ticker(object):
         return self.stock_index.insID2index(stock_name2id(ins_name))
 
     def id2industry(self, ins_id):
-        return self.stock_industry.get_ins_name_industry_fast(
-            stock_id2name(ins_id))
+        return self.stock_industry.get_ins_name_industry_fast(stock_id2name(ins_id))
 
     def name2industry(self, ins_name):
         return self.stock_industry.get_ins_name_industry_fast(ins_name)
@@ -78,9 +77,9 @@ class StockIndex():
         ss = self.index_component.get_session()
         ret = ss.query(
             distinct(self.index_component.table_struct.instrument_code)).filter(
-                and_(self.index_component.table_struct.index_code == index_code,
-                     self.index_component.table_struct.ineffective_date > selected_date,
-                     self.index_component.table_struct.effective_date <= selected_date))
+                        and_(self.index_component.table_struct.index_code == index_code,
+                             self.index_component.table_struct.ineffective_date > selected_date,
+                             self.index_component.table_struct.effective_date <= selected_date))
         ret = ret.all()
         ss.close()
 
@@ -116,21 +115,14 @@ class StockIndustry():
         self.industry_table.create_table()
         self.industry_stock_table.create_table()
 
-        self.industry_df = pd.read_sql_table(self.industry_table.table_name,
-                                             self.industry_table.engine)
+        self.industry_df = pd.read_sql_table(self.industry_table.table_name,self.industry_table.engine)
+        self.industry_stock_df = pd.read_sql_table(self.industry_stock_table.table_name,self.industry_stock_table.engine)
 
-        self.industry_stock_df = pd.read_sql_table(
-            self.industry_stock_table.table_name,
-            self.industry_stock_table.engine)
-
-    def get_industry_info(self,
-                          value_field='industry_code',
-                          industry_level=1,
-                          industry_type_code='ZZ'):
+    def get_industry_info(self,value_field='industry_code',industry_level=1,industry_type_code='ZZ'):
         ss = self.industry_table.get_session()
         ret = ss.query(self.industry_table.table_struct).filter_by(
-            industry_level=industry_level,
-            industry_type_code=industry_type_code)
+                            industry_level=industry_level,
+                            industry_type_code=industry_type_code)
         ss.close()
         return [getattr(i, value_field) for i in ret]
 

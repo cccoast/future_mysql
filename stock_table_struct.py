@@ -2,9 +2,12 @@
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 import dbBase as db
+from __builtin__ import isinstance
 
 
 def stock_id2name(_id):
+    if isinstance(_id,str) and ( _id.endswith('.SH') or _id.endswith('.SZ') or _id.endswith('.CSI') ):
+        return _id
     inid = int(_id)
     _id = '{:0>6}'.format(_id)
     if inid >= 900000:
