@@ -8,6 +8,7 @@ def stock_id2name(_id):
     inid = int(_id)
     _id = '{:0>6}'.format(_id)
     if inid >= 900000:
+        _id = '{:0>6}'.format(inid - 900000)
         return _id + '.CSI'
     elif inid >= 600000:
         return _id + '.SH'
@@ -272,4 +273,4 @@ def import_database():
     print 'done'
 
 if __name__ == '__main__':
-    pass
+    print stock_id2name(900300)

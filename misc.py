@@ -1,5 +1,5 @@
 import pandas as pd
-from multiprocessing import Process
+from multiprocessing import Process,freeze_support
 
 timestamp2int = lambda x: x.year * 10000 + x.month * 100 + x.day
 get_year_month_day = lambda x: (int(x/10000),int((x%10000)/100),int(x%100))
@@ -15,6 +15,7 @@ def sorted_dict(indict, sort_value_index=1, reverse=True):
 
 def run_paralell_tasks(func, iter_args):
     tasks = []
+    freeze_support()
     for iarg in iter_args:
         task = Process(target=func, args=(iarg,))
         tasks.append(task)
@@ -25,7 +26,7 @@ def run_paralell_tasks(func, iter_args):
 
 
 def get_special_month_day(indate):
-    if not isinstance(indate, pd.tslib.Timestamp):
+    if not isinstance(indate, pd.Timestamp):
         t = pd.to_datetime(str(indate))
         return t.day
     else:
@@ -33,7 +34,7 @@ def get_special_month_day(indate):
 
 
 def get_special_weekday(indate):
-    if not isinstance(indate, pd.tslib.Timestamp):
+    if not isinstance(indate, pd.Timestamp):
         return pd.to_datetime(str(indate)).isoweekday()
     else:
         return indate.isoweekday()

@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class DayMode(object):
 
     LOWWER_BOUND = 0
@@ -19,12 +18,12 @@ class DayMode(object):
     OTHER_END_MILLI_OF_DAY = 54000000  #15:00
 
     class CFFEX(object):
-        morning_begin = 1800
+        morning_begin = 3600
         morning_end = 18000
         afternoon_begin = 28800
         afternoon_end = 45000
-        break1 = 1800
-        break2 = 10800
+        break1 = 3600             #break length
+        break2 = 10800            #break length
 
     class OtherBreak(object):
         morning_begin = 0
@@ -33,8 +32,8 @@ class DayMode(object):
         morning_end = 18000
         afternoon_begin = 32400
         afternoon_end = 43200
-        break1 = 1800
-        break2 = 14400
+        break1 = 1800            #break length 
+        break2 = 14400           #break length
 
     def __init__(self):
 

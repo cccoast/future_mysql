@@ -167,11 +167,8 @@ class DB_UNI_TEST(DB_BASE):
 
     def show(self):
         t201301 = Table('test', self.meta,
-                        Column(
-                            'point',
-                            Integer,
-                            primary_key=True,
-                            autoincrement=False), Column('_id', String(45)))
+                        Column('point',Integer,primary_key=True,autoincrement=False),
+                        Column('_id', String(45)))
         table_struct = self.quick_map(t201301)
 
         print table_struct.__table__.columns
@@ -215,7 +212,8 @@ class DB_UNI_TEST(DB_BASE):
 
 
 if __name__ == '__main__':
-    dbapi = DB_UNI_TEST('citic_bank')
+    dbapi = DB_UNI_TEST('test')
+    dbapi.show()
     import pandas as pd
-    df = pd.read_sql('reserve',dbapi.engine)
+    df = pd.read_sql_table('test',dbapi.engine)
     print df.head()

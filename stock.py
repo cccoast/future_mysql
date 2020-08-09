@@ -3,7 +3,6 @@ from stock_table_struct import stock_data_model_index_component,stock_id2name,st
 from sqlalchemy import and_, distinct
 import pandas as pd
 
-
 class Ticker(object):
 
     def __init__(self):
@@ -34,7 +33,6 @@ class Ticker(object):
 
     def name2industry(self, ins_name):
         return self.stock_industry.get_ins_name_industry_fast(ins_name)
-
 
 class StockIndex():
 
@@ -91,8 +89,8 @@ class StockIndex():
     def insID2index(self, ins_id, selected_date = 20300000):
         ins_id = int(ins_id)
         ins_name = stock_id2name(ins_id)    
-        if ins_id in self.stock2index:
-            return self.stock2index[ins_id]
+#         if ins_id in self.stock2index:
+#             return self.stock2index[ins_id]
         ss = self.index_component.get_session()
         ret = ss.query(
             distinct(self.index_component.table_struct.index_code)).filter(
@@ -109,7 +107,6 @@ class StockIndex():
             return index_code
         else:
             return None
-
 
 class StockIndustry():
 
@@ -180,14 +177,12 @@ class StockIndustry():
                     ]].values if len(i) > 0
         ]
 
-
 def test_index():
     stock_index = StockIndex()
     print len(stock_index.index2insIDs(stock_index.hs300_code))
     print len(stock_index.index2insIDs(stock_index.zz500_code))
     print len(stock_index.index2insIDs(stock_index.zz800_code))
     print stock_index.insID2index('000001')
-
 
 def test_industry():
     stock_industry = StockIndustry()
@@ -198,7 +193,6 @@ def test_industry():
     print stock_industry.get_industry_info_fast()
     print stock_industry.get_ins_name_industry('300002.SZ')
     print stock_industry.get_ins_name_industry_fast('300002.SZ')
-
 
 def test_ticker():
     ticker_info = Ticker()
@@ -213,7 +207,6 @@ def test_convert():
     print stock_index.index2insIDs('000300.CSI',20100104)
     print stock_index.index2insIDs('000905.CSI',20100104)
 
-
 def unitest():
     test_convert()
     test_index()
@@ -221,5 +214,6 @@ def unitest():
     test_ticker()
 
 if __name__ == '__main__':
-    unitest()
-    
+    si = StockIndex()
+    print si.default_ins_set.keys()
+    print [ i.split('.')[0] for i in si.insID2index('000001')]
