@@ -13,6 +13,9 @@ def stock_id2name(_id):
     if inid >= 900000:
         _id = '{:0>6}'.format(inid - 900000)
         return _id + '.CSI'
+    #SW sector
+    elif 699999 < inid < 900000:
+        return _id
     elif inid >= 600000:
         return _id + '.SH'
     elif inid >= 0:
