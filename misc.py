@@ -7,6 +7,8 @@ get_year_month_day = lambda x: (int(x/10000),int((x%10000)/100),int(x%100))
 cffex_tickers = ['if', 'tf', 'ic', 'ih']
 shfex_tickers = ['au', 'ag', 'cu', 'al', 'zn', 'rb', 'ru']
 
+unicode2utf8 = lambda x: x.encode('utf-8') if isinstance(x,unicode) else x
+unicode2cp936 = lambda x: x.encode('cp936') if isinstance(x,unicode) else x
 
 def sorted_dict(indict, sort_value_index=1, reverse=True):
     return sorted(

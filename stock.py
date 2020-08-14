@@ -1,8 +1,77 @@
-from stock_table_struct import stock_data_model_index_component,stock_id2name,stock_name2id,\
-                                stock_data_model_industry,stock_data_model_stock_industry
+#coding:utf8
+from stock_table_struct import stock_data_model_index_component,stock_data_model_industry,stock_data_model_stock_industry
 from sqlalchemy import and_, distinct
 import pandas as pd
 
+import sys
+if '..' not in sys.path:
+    sys.path.append('..')
+from tushare_feed.models import stock_index_weight,sw_industry,sw_industry_detail,csi_industry,csi_industry_detail,\
+                                    csrc_industry,csrc_industry_detail
+from tushare_feed.index import main_index_names,csi_sector_names,sw_sector_names,stock_index_names_all
+
+_stock_index_name_to_id = None
+_stock_index_id_to_name = None
+
+def generate_index_name_id_dict():
+    global _stock_index_name_to_id 
+    global _stock_index_id_to_name
+    _stock_index_name_to_id = {}
+    _stock_index_id_to_name = {}
+    for name in stock_index_names_all:
+        v = name.split('.')
+        #sw id
+        if len(v) == 1:
+            _stock_index_name_to_id[name] = int(name)
+        elif name.upper() == '399300.SZ':
+            _stock_index_name_to_id[name] = 900300
+        else:
+            _stock_index_name_to_id[name] = int(v[0]) + 900000
+    for k,v in _stock_index_name_to_id.iteritems():
+        _stock_index_id_to_name[v] = k
+        
+def stock_index_name_to_id(name):
+    global stock_index_name_to_id
+    if _stock_index_name_to_id is None:
+        generate_index_name_id_dict()
+    return _stock_index_name_to_id[name]
+
+def stock_index_id_to_name(id):
+    global _stock_index_name_to_id
+    if _stock_index_id_to_name is None:
+        generate_index_name_id_dict()
+    return _stock_index_id_to_name[id]
+    
+def is_stock_index_name(name):
+    return name in stock_index_names_all
+
+def is_stock_index_id(id):
+    name = stock_index_id_to_name(id)
+    return is_stock_index_name(name)
+    
+def stock_id2name(_id):
+    if isinstance(_id,str) and (_id.endswith('.SH') or _id.endswith('.SZ')):
+        return _id
+    inid = int(_id)
+    _id = '{:0>6}'.format(_id)
+    #index
+    if inid >= 699999:
+        return stock_index_id_to_name(inid)
+    elif inid >= 600000:
+        return _id + '.SH'
+    elif inid >= 0:
+        return _id + '.SZ'
+    else:
+        return None
+
+def stock_name2id(name):
+    is_index = name in stock_index_names_all
+    if is_index is True:
+        return stock_index_name_to_id(name)
+    else:
+        return int(name.split('.')[0])
+
+    
 class Ticker(object):
 
     def __init__(self):
@@ -22,10 +91,10 @@ class Ticker(object):
         return 'stock'
 
     def id2index(self, ins_id):
-        return self.stock_index.insID2index(ins_id)
+        return self.stock_index.insID2indexName(ins_id)
 
     def name2index(self, ins_name):
-        return self.stock_index.insID2index(stock_name2id(ins_name))
+        return self.stock_index.insID2indexName(stock_name2id(ins_name))
 
     def id2industry(self, ins_id):
         return self.stock_industry.get_ins_name_industry_fast(stock_id2name(ins_id))
@@ -35,57 +104,55 @@ class Ticker(object):
 
 class StockIndex():
 
-    hs300_code, zz500_code, zz800_code = '000300.CSI', '000905.CSI', '000906.CSI'
-
+    hs300_code, zz500_code, zz800_code = '399300.SZ', '000905.SH', '000906.SH'
+    default_effective_date   = 20090101
+    default_ineffective_date = 20300101
+    
     def __init__(self):
-        self.index_component = stock_data_model_index_component()
+        #use ph data
+        #self.index_component = stock_data_model_index_component()
+        #use tushare data
+        self.index_component = stock_index_weight()
         self.index_component.create_table()
+
         self.default_ins_set = {}
-        self.default_index_effective_day = 20300000
-        self.hs300_ins_set = self.index2insIDs(index_code=self.hs300_code)
-        self.zz500_ins_set = self.index2insIDs(index_code=self.zz500_code)
-        self.zz800_ins_set = self.index2insIDs(index_code=self.zz800_code)
+        self.hs300_ins_set = self.indexName2insIDs(index_code=self.hs300_code)
+        self.zz500_ins_set = self.indexName2insIDs(index_code=self.zz500_code)
+        self.zz800_ins_set = self.indexName2insIDs(index_code=self.zz800_code)
         self.default_ins_set[self.hs300_code] = self.hs300_ins_set
         self.default_ins_set[self.zz500_code] = self.zz500_ins_set
         self.default_ins_set[self.zz800_code] = self.zz800_ins_set
 
         self.stock2index = {}
         for ins_id in self.default_ins_set[self.zz800_code]:
-            self.stock2index[ins_id] = []
-            self.stock2index[ins_id].append(self.zz800_code)
-
+            self.stock2index[ins_id] = set()
+            self.stock2index[ins_id].add(self.zz800_code)
         for ins_id in self.default_ins_set[self.zz500_code]:
             if self.stock2index.has_key(ins_id):
-                self.stock2index[ins_id].append(self.zz500_code)
-
+                self.stock2index[ins_id].add(self.zz500_code)
         for ins_id in self.default_ins_set[self.hs300_code]:
             if self.stock2index.has_key(ins_id):
-                self.stock2index[ins_id].append(self.hs300_code)
+                self.stock2index[ins_id].add(self.hs300_code)
     
     #default the newest index component
-    def index2insIDs(self, index_code=hs300_code, selected_date = 20300000):
-        index_code = str(index_code).upper()
-        if not index_code.endswith('.CSI') and not index_code.startswith('9'):
-            index_code = index_code + '.CSI'
-        elif index_code.startswith('9'):
-            index_code = stock_id2name(index_code)
+    def indexName2insIDs(self, index_code=hs300_code, start_date = default_effective_date, end_date = default_ineffective_date):
 
-        if ( selected_date == self.default_index_effective_day ) and \
-                ( index_code in self.default_ins_set.keys() ):
+        if ( start_date == self.default_effective_date) \
+            and (end_date == self.default_ineffective_date ) \
+                and ( index_code in self.default_ins_set.keys() ):
             return self.default_ins_set[index_code]
 
         ss = self.index_component.get_session()
         ret = ss.query(
-            distinct(self.index_component.table_struct.instrument_code)).filter(
+            distinct(self.index_component.table_struct.stock_code)).filter(
                         and_(self.index_component.table_struct.index_code == index_code,
-                             self.index_component.table_struct.ineffective_date > selected_date,
-                             self.index_component.table_struct.effective_date <= selected_date))
+                                self.index_component.table_struct.effective_date >= start_date,
+                                    self.index_component.table_struct.effective_date < end_date))
         ret = ret.all()
         ss.close()
-
         return [int(i[0].split('.')[0]) for i in ret if len(i) > 0]
 
-    def insID2index(self, ins_id, selected_date = 20300000):
+    def insID2indexName(self, ins_id, start_date = default_effective_date, end_date = default_ineffective_date):
         ins_id = int(ins_id)
         ins_name = stock_id2name(ins_id)    
 #         if ins_id in self.stock2index:
@@ -93,119 +160,89 @@ class StockIndex():
         ss = self.index_component.get_session()
         ret = ss.query(
             distinct(self.index_component.table_struct.index_code)).filter(
-                and_(self.index_component.table_struct.instrument_code == ins_name, 
-                     self.index_component.table_struct.ineffective_date > selected_date,
-                     self.index_component.table_struct.effective_date <= selected_date))
+                and_(self.index_component.table_struct.stock_code == ins_name, 
+                        self.index_component.table_struct.effective_date >= start_date,
+                            self.index_component.table_struct.effective_date < end_date))
         index_code = [i[0] for i in ret.all()]
         ss.close()
         if len(index_code) > 0:
+            print index_code
             if self.stock2index.has_key(ins_id):
-                self.stock2index[ins_id].append(index_code)
+                self.stock2index[ins_id] |= set(index_code)
             else:
-                self.stock2index[ins_id] = [index_code,]
+                self.stock2index[ins_id] = set(index_code)
             return index_code
         else:
             return None
 
 class StockIndustry():
 
-    def __init__(self):
-        self.industry_table = stock_data_model_industry()
-        self.industry_stock_table = stock_data_model_stock_industry()
+    def __init__(self,industry_type_code='sw'):
+        #ph
+#         self.industry_table = stock_data_model_industry()
+#         self.industry_stock_table = stock_data_model_stock_industry()
+        #tushare
+        self.industry_type_code = industry_type_code.lower()
+        if industry_type_code == 'sw':
+            self.industry_table = sw_industry()
+            self.industry_stock_table = sw_industry_detail()
+        elif industry_type_code == 'csi':
+            self.industry_table = csi_industry()
+            self.industry_stock_table = csi_industry_detail()
+        elif industry_type_code == 'csrc':
+            self.industry_table = csrc_industry()
+            self.industry_stock_table = csrc_industry_detail()
+        
         self.industry_table.create_table()
         self.industry_stock_table.create_table()
 
         self.industry_df = pd.read_sql_table(self.industry_table.table_name,self.industry_table.engine)
         self.industry_stock_df = pd.read_sql_table(self.industry_stock_table.table_name,self.industry_stock_table.engine)
-
-    def get_industry_info(self,value_field='industry_code',industry_level=1,industry_type_code='ZZ'):
-        ss = self.industry_table.get_session()
-        ret = ss.query(self.industry_table.table_struct).filter_by(
-                            industry_level=industry_level,
-                            industry_type_code=industry_type_code)
-        ss.close()
-        return [getattr(i, value_field) for i in ret]
-
-    def get_industry_info_fast(self,
-                               value_field='industry_code',
-                               industry_level=1,
-                               industry_type_code='ZZ'):
-        return [
-            i[0]
-            for i in self.industry_df.
-            loc[(self.industry_df['industry_level'] == industry_level) & (
-                self.industry_df['industry_type_code'] == industry_type_code), [
-                    value_field,
-                ]].values if len(i) > 0
-        ]
-
-    def get_ins_name_industry(self,
-                              ins_name,
-                              industry_type_code='ZZ',
-                              selected_date=20200000):
+    
+    def get_industry_names(self,lv = 'l1'):
+        lvl_code = '_'.join((lv,'code'))
+        return pd.unique(self.industry_df.loc[:,lvl_code].values)
+        
+    def ins_name2industry(self,ins_name,lv = 'l1'):
+        lvl_code = '_'.join(('industry_code',lv))
         ss = self.industry_stock_table.get_session()
-        ret = ss.query(self.industry_stock_table.table_struct).filter(
-            and_(self.industry_stock_table.table_struct.stock_code == ins_name,
-                 self.industry_stock_table.table_struct.ineffective_date > selected_date,
-                 self.industry_stock_table.table_struct.effective_date <= selected_date))
+        ret = ss.query(self.industry_stock_table.table_struct).filter(\
+                            self.industry_stock_table.table_struct.stock_code == stock_name2id(ins_name)).first()
         ss.close()
-        return [
-            i.industry_code for i in ret
-            if i.industry_code.endswith(industry_type_code)
-        ]
+        if self.industry_type_code == 'sw':
+            return getattr(ret,lvl_code).split('.')[0]
+        else:
+            return getattr(ret,lvl_code)
 
-    def get_ins_name_industry_fast(self,
-                                   ins_name,
-                                   industry_type_code='ZZ',
-                                   ineffective_date=20200000):
-        return [
-            i[0]
-            for i in self.industry_stock_df.loc[
-                (self.industry_stock_df['ineffective_date'] >= ineffective_date
-                ) & (self.industry_stock_df['stock_code'] == ins_name) &
-                (self.industry_stock_df['industry_code'].apply(
-                    lambda x: x.endswith(industry_type_code))), [
-                        'industry_code',
-                    ]].values if len(i) > 0
-        ]
+    def ins_name2industry_fast(self,ins_name,lv = 'l1'):
+        lvl_code = '_'.join(('industry_code',lv))
+        name =  self.industry_stock_df.loc[ self.industry_stock_df['stock_code'] == stock_name2id(ins_name), lvl_code].values[0]
+        if self.industry_type_code == 'sw':
+            return name.split('.')[0]
+        else:
+            return name
 
 def test_index():
-    stock_index = StockIndex()
-    print len(stock_index.index2insIDs(stock_index.hs300_code))
-    print len(stock_index.index2insIDs(stock_index.zz500_code))
-    print len(stock_index.index2insIDs(stock_index.zz800_code))
-    print stock_index.insID2index('000001')
-
-def test_industry():
-    stock_industry = StockIndustry()
-    #     for industry_level,sub_df in stock_industry.industry_df.groupby('industry_level'):
-    #         print industry_level
-    #         print sub_df['industry_type_code'].unique()
-    print stock_industry.get_industry_info()
-    print stock_industry.get_industry_info_fast()
-    print stock_industry.get_ins_name_industry('300002.SZ')
-    print stock_industry.get_ins_name_industry_fast('300002.SZ')
-
-def test_ticker():
-    ticker_info = Ticker()
-    print ticker_info.get_id('300002.SZ')
-    print [stock_name2id(i) for i in ticker_info.id2index('300002')]
-    print ticker_info.id2industry('300002')
-    print ticker_info.name2index('300002.SZ')
-    print ticker_info.name2industry('300002.SZ')
-
-def test_convert():
-    stock_index = StockIndex()
-    print stock_index.index2insIDs('000300.CSI',20100104)
-    print stock_index.index2insIDs('000905.CSI',20100104)
-
-def unitest():
-    test_convert()
-    test_index()
-    test_industry()
-    test_ticker()
-
-if __name__ == '__main__':
+    print stock_index_name_to_id('399300.SZ')
+    print stock_index_id_to_name(900300)
+    print _stock_index_name_to_id
+    print stock_id2name(900300)
+    print stock_id2name(600030)
+    print stock_name2id('399300.SZ')
+    print stock_name2id('600300.SH')
+    
+def test_stock_index():
     si = StockIndex()
-    print si.default_ins_set.keys()
-    print [ i.split('.')[0] for i in si.insID2index('000001')]
+    for k,v in si.default_ins_set.iteritems():
+        print k,len(v)
+        print v
+        
+def test_stock_industry():
+    si = StockIndustry('sw')
+    print si.get_industry_names(lv = 'l2')
+    print si.ins_name2industry('000001.SZ')
+    print si.ins_name2industry_fast('000001.SZ')
+    
+if __name__ == '__main__':
+    test_stock_industry()
+    

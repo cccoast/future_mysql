@@ -2,36 +2,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 import dbBase as db
-from __builtin__ import isinstance
-
-
-def stock_id2name(_id):
-    if isinstance(_id,str) and ( _id.endswith('.SH') or _id.endswith('.SZ') or _id.endswith('.CSI') ):
-        return _id
-    inid = int(_id)
-    _id = '{:0>6}'.format(_id)
-    if inid >= 900000:
-        _id = '{:0>6}'.format(inid - 900000)
-        return _id + '.CSI'
-    #SW sector
-    elif 699999 < inid < 900000:
-        return _id
-    elif inid >= 600000:
-        return _id + '.SH'
-    elif inid >= 0:
-        return _id + '.SZ'
-    else:
-        return None
-
-
-def stock_name2id(_id):
-    index = False if ((not _id.endswith('.SZ')) and
-                      (not _id.endswith('.SH'))) else True
-    if index:
-        return _id.split('.')[0]
-    else:
-        return str(900000 + int(_id.split('.')[0]))
-
 
 class stock_data_model_base(db.DB_BASE):
 
