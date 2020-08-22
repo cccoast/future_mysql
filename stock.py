@@ -1,5 +1,5 @@
 #coding:utf8
-from stock_table_struct import stock_data_model_index_component,stock_data_model_industry,stock_data_model_stock_industry
+# from stock_table_struct import stock_data_model_index_component,stock_data_model_industry,stock_data_model_stock_industry
 from sqlalchemy import and_, distinct
 import pandas as pd
 
@@ -86,22 +86,20 @@ class Ticker(object):
         
     def id2name(self, _id):
         return stock_id2name(_id)
-        
-    def id2dbname(self, ticker):
-        return 'stock'
 
     def id2index(self, ins_id):
         return self.stock_index.insID2indexName(ins_id)
 
     def name2index(self, ins_name):
         return self.stock_index.insID2indexName(stock_name2id(ins_name))
+    
+    def name2industry(self, ins_name):
+        return self.stock_industry.ins_name2industry_fast(ins_name)
 
     def id2industry(self, ins_id):
-        return self.stock_industry.get_ins_name_industry_fast(stock_id2name(ins_id))
+        return self.name2industry(stock_id2name(ins_id))
 
-    def name2industry(self, ins_name):
-        return self.stock_industry.get_ins_name_industry_fast(ins_name)
-
+    
 class StockIndex():
 
     hs300_code, zz500_code, zz800_code = '399300.SZ', '000905.SH', '000906.SH'
@@ -166,7 +164,6 @@ class StockIndex():
         index_code = [i[0] for i in ret.all()]
         ss.close()
         if len(index_code) > 0:
-            print index_code
             if self.stock2index.has_key(ins_id):
                 self.stock2index[ins_id] |= set(index_code)
             else:
@@ -209,18 +206,24 @@ class StockIndustry():
         ret = ss.query(self.industry_stock_table.table_struct).filter(\
                             self.industry_stock_table.table_struct.stock_code == stock_name2id(ins_name)).first()
         ss.close()
-        if self.industry_type_code == 'sw':
-            return getattr(ret,lvl_code).split('.')[0]
-        else:
-            return getattr(ret,lvl_code)
+        try:
+            if self.industry_type_code == 'sw':
+                return getattr(ret,lvl_code).split('.')[0]
+            else:
+                return getattr(ret,lvl_code)
+        except:
+            return ''
 
     def ins_name2industry_fast(self,ins_name,lv = 'l1'):
         lvl_code = '_'.join(('industry_code',lv))
-        name =  self.industry_stock_df.loc[ self.industry_stock_df['stock_code'] == stock_name2id(ins_name), lvl_code].values[0]
-        if self.industry_type_code == 'sw':
-            return name.split('.')[0]
-        else:
-            return name
+        name =  self.industry_stock_df.loc[ self.industry_stock_df['stock_code'] == stock_name2id(ins_name), lvl_code]
+        try:
+            if self.industry_type_code == 'sw':
+                return name.values[0].split('.')[0]
+            else:
+                return name.values[0]
+        except:
+            return ''
 
 def test_index():
     print stock_index_name_to_id('399300.SZ')

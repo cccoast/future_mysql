@@ -151,7 +151,7 @@ class stock_data_model_stock(stock_data_model_base):
                 Column('low_price', Float(asdecimal=True)),
                 Column('close_price', Float(asdecimal=True)),
                 Column('volume', Float(asdecimal=True)),
-                Column('turnover', String(100)),
+                Column('turnover',Float(asdecimal=True)),
                 Column('last_close_price', Float(asdecimal=True)),
                 Column('ab_rate', Float(asdecimal=True)),
                 Column('average_price', Float(asdecimal=True)),
