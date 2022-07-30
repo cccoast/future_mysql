@@ -4,8 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 
-import collections
-
+from collections.abc import Iterable
 
 class DB_BASE(object):
 
@@ -50,7 +49,7 @@ class DB_BASE(object):
 
     def insert_data_frame(self, _class, df, merge = False, chunk_size = 1024):
         magic_number = chunk_size
-        print len(df)
+        print(len(df))
         if len(df) < magic_number:
             self.insert_dicts(_class, df.to_dict('records'), merge)
         else:
@@ -82,7 +81,7 @@ class DB_BASE(object):
     def insert_lists(self, _class, _lists, merge=False):
         cols = _class.__table__.c.keys()
         if len(cols) > 1:
-            if isinstance(_lists[0], collections.Iterable):
+            if isinstance(_lists[0], Iterable):
                 _dicts = [dict(zip(cols, val)) for val in _lists]
             else:
                 _dicts = [{cols[i]: val} for i, val in enumerate(_lists)]
@@ -158,7 +157,7 @@ class DB_BASE(object):
         ret = ss.query(obj).filter_by(**kw).all()
         ss.close()
         return ret
-
+    
 
 class DB_UNI_TEST(DB_BASE):
 
@@ -171,14 +170,14 @@ class DB_UNI_TEST(DB_BASE):
                         Column('_id', String(45)))
         table_struct = self.quick_map(t201301)
 
-        print table_struct.__table__.columns
+        print(table_struct.__table__.columns)
 
         _id = "if"
 
         session = self.get_session()
         all_records = session.query(table_struct).all()
         for irecord in all_records:
-            print irecord._id, irecord.point
+            print(irecord._id, irecord.point)
             session.delete(irecord)
         session.commit()
         session.close()
@@ -190,7 +189,7 @@ class DB_UNI_TEST(DB_BASE):
             _idict = dict(zip(col_names, (i, _id + str(i))))
             dicts.append(_idict)
 
-        print dicts
+        print(dicts)
         self.insert_dicts(table_struct, dicts, True)
 
         self.insert_obj(table_struct(**dict(zip(col_names, (99, 'test')))))
@@ -207,7 +206,7 @@ class DB_UNI_TEST(DB_BASE):
             ilist = (i, _id + str(i))
             lists.append(ilist)
 
-        print lists
+        print(lists)
         self.insert_lists(table_struct, lists, True)
 
 
@@ -216,4 +215,4 @@ if __name__ == '__main__':
     dbapi.show()
     import pandas as pd
     df = pd.read_sql_table('test',dbapi.engine)
-    print df.head()
+    print(df.head())
