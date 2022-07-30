@@ -40,17 +40,14 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date,
 
     db_model = data_model_tick
     valid_dates = set(
-        map(lambda x: int(x), AllTradingDays().get_trading_day_list()))
+        [int(x) for x in AllTradingDays().get_trading_day_list()])
 
-    dirs = filter(lambda x: os.path.isdir(os.path.join(x)),
-                  map(lambda y: os.path.join(root_path, y),
-                      os.listdir(root_path)))
+    dirs = [x for x in [os.path.join(root_path, y) for y in os.listdir(root_path)] if os.path.isdir(os.path.join(x))]
 
     for idir in dirs:
-        infiles = filter(lambda x: str.isdigit(x.split('.')[0][2:]),
-                         os.listdir(idir))
+        infiles = [x for x in os.listdir(idir) if str.isdigit(x.split('.')[0][2:])]
         date = int(idir.split(os.path.sep)[-1])
-        inss = map(lambda x: x.split('.')[0], infiles)
+        inss = [x.split('.')[0] for x in infiles]
         day = int(month * 100 + date % 100)
         if start_date is not None and day < start_date:
             continue
@@ -65,16 +62,16 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date,
                 continue
         else:
             if new_records.check_table_exist():
-                print 'warning drop table = ', day
+                print('warning drop table = ', day)
                 new_records.drop_table(str(day))
-        print day
+        print(day)
 
         for ins, infile in zip(inss, infiles):
-            print ins
+            print(ins)
             try:
                 df = pd.read_csv(os.path.join(idir, infile),index_col=None,usecols=[0, 1, 3, 4, 5, 6, 7, 8],parse_dates=False)
             except:
-                print 'error, cannot read csv file'
+                print('error, cannot read csv file')
                 continue
             #some data source file may be in wrong format
             if len(df) < 1:
@@ -83,7 +80,7 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date,
             split_time_func = timeSplit
             ##for speical time stamp
             if '.' not in df['Time'].iloc[0]:
-                print 'warning, time stamp format hh:mm:ss'
+                print('warning, time stamp format hh:mm:ss')
                 cookie = [False] * ((15 - 9) * 3600 + 30 * 60)
                 split_time_func = partial(SpecialTimeSplit, cookie)
 
@@ -107,7 +104,7 @@ def import_tick_per_month(ticker,month,root_path,start_date,end_date,
 
             #take care here, some inactive contrace may not have ask/bid volume at first
             first_one = np.max(df.apply(lambda x: x.first_valid_index(), axis=0))
-            df = df.reindex(xrange(spots_count_perday), method='pad')
+            df = df.reindex(range(spots_count_perday), method='pad')
 
             df.fillna(method='pad', inplace=True)
             if first_one > 0:
@@ -163,12 +160,12 @@ def get_import_path(ticker,year,month):
             
 def import_cffex_if(year, month, start_date = None, end_date = None, force_reload=False):
     import_path = get_import_path('if', year, month)
-    print import_path
+    print(import_path)
     import_tick_per_month('if', year * 100 + month, import_path, start_date, end_date, force_reload)
 
 def import_shfex_au(year, month, start_date = None, end_date = None, force_reload=False):
     import_path = get_import_path('au', year, month)
-    print import_path
+    print(import_path)
     import_tick_per_month('au',year * 100 + month,import_path,start_date,end_date,force_reload=force_reload)
 
 

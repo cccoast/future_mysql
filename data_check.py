@@ -14,7 +14,7 @@ def get_suspension_days(ipckey, ins_index = 25):
     shm_api = ShmPython.Shm(ipckey)
     shm_header = shm_api.getHeader()
     trading_day_list = pd.Series(shm_api.getTradingDayList())[:-1]
-    tradingDay2NDay = pd.Series(index = trading_day_list,data = range(len(trading_day_list)))
+    tradingDay2NDay = pd.Series(index = trading_day_list,data = list(range(len(trading_day_list))))
     spots_count_perday = shm_header.getSpotsCountPerDay()
     spots_count = shm_header.getSpotsCount()
     volume_index = shm_api.id2index_ind(113)
@@ -39,11 +39,11 @@ def get_suspension_days(ipckey, ins_index = 25):
     sub_df = df[df['price_type_code'] == 0]
     b = set(sub_df.index)
     if a != b:
-        print ins_index,ins_name,False
-        print suspension_days
-        print sorted(set(sub_df.index))
+        print(ins_index,ins_name,False)
+        print(suspension_days)
+        print(sorted(set(sub_df.index)))
     else:
-        print ins_index,True
+        print(ins_index,True)
      
 def get_table_from_sql_db(db_name, table_name):
     #     dtype = {1:np.float,2:np.float,4:np.float,3:np.int,5:np.int,6:np.int,7:np.int}
@@ -62,7 +62,7 @@ def get_table_from_sql_db(db_name, table_name):
 def check_trading_day_list(ipckey):
     shm_api = ShmPython.Shm(ipckey)
     trading_day_list = pd.Series(shm_api.getTradingDayList())
-    print trading_day_list
+    print(trading_day_list)
 
 
 def get_data_from_memory(ind_id, ipckey, ins_id, start_date, end_date, day = None):
@@ -82,7 +82,7 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date, end_date, day = Non
         #         end_spot = shm_api.getLastSpot(0)
         end_spot = spots_count - spots_count_perday
 
-    print ind_id, nth_day, spots_count_perday, spots_count, start_spot, end_spot
+    print(ind_id, nth_day, spots_count_perday, spots_count, start_spot, end_spot)
     ind_index = shm_api.id2index_ind(ind_id)
     unit_size = shm_header.getIndicatorsUnitSizeList()
     if unit_size[ind_index] == 8:
@@ -92,8 +92,8 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date, end_date, day = Non
     
     if len(datas) > 100000:
         datas = datas[::120]
-        print 'datas too long, sample by 120 spots'
-    print datas
+        print('datas too long, sample by 120 spots')
+    print(datas)
     plt.plot(datas)
     plt.show()
 
@@ -106,21 +106,21 @@ def get_nostruct_data_from_memory(ipckey, nostruct_ipckey):
     ins_list = shm_header.getInstrumentsList()
     ind_list = shm_header.getIndicatorsList()
     trading_days_list = nostruct_shm_api.getTradingDayList()
-    print trading_days_list
+    print(trading_days_list)
 
     ins_name_list = [nostruct_shm_api.id2name_ind(i) for i in ind_list]
     ind_name_list = [nostruct_shm_api.id2name_ins(i) for i in ins_list]
-    print ins_name_list
-    print ind_name_list
+    print(ins_name_list)
+    print(ind_name_list)
 
     milli_sec_list = [
         nostruct_shm_api.getSpot2MilliSec(i)
-        for i in xrange(shm_header.getSpotsCountPerDay())
+        for i in range(shm_header.getSpotsCountPerDay())
     ]
     spots_list = [nostruct_shm_api.getMilliSec2Spot(i) for i in milli_sec_list]
 
-    print milli_sec_list
-    print spots_list
+    print(milli_sec_list)
+    print(spots_list)
 
 
 def check_adjust(ipckey1, ipckey2):
@@ -130,11 +130,11 @@ def check_adjust(ipckey1, ipckey2):
     header = no_adjust_api.getHeader()
     trading_day_list = no_adjust_api.getTradingDayList()
     trading_day_map = pd.Series(
-        index=trading_day_list, data=range(len(trading_day_list)))
+        index=trading_day_list, data=list(range(len(trading_day_list))))
     spots_count_perday = header.getSpotsCountPerDay()
     from misc import get_nth_specical_weekday_in_daterange
     from itertools import chain
-    weekdays = [i for i in chain(*(get_nth_specical_weekday_in_daterange(20140101, 20151231, 5, 1).values()))]
+    weekdays = [i for i in chain(*(list(get_nth_specical_weekday_in_daterange(20140101, 20151231, 5, 1).values())))]
     first_roll_day = weekdays[-1]
     nth_first_roll_day = trading_day_map[first_roll_day]
     ind_index, ins_index = 0, 0
@@ -142,7 +142,7 @@ def check_adjust(ipckey1, ipckey2):
         ind_index, ins_index, 0, spots_count_perday * nth_first_roll_day)
     datas2 = adjusted_api.fetchDoubleDataList(
         ind_index, ins_index, 0, spots_count_perday * nth_first_roll_day)
-    print 'cum adjust value = ', (datas2[0] - datas1[0])
+    print('cum adjust value = ', (datas2[0] - datas1[0]))
     plt.plot(datas1, label='no_adjust')
     plt.plot(datas2, label='adjusted')
     plt.legend()
@@ -153,7 +153,7 @@ def check_adjust(ipckey1, ipckey2):
         index_col=0,
         header=None,
         sep=' ')
-    print df[5].sum()
+    print(df[5].sum())
 
 def test_stock_basic_indicators(ins_id,ipckey):
     ind_ids = [100,101,102,103,110,113,115]

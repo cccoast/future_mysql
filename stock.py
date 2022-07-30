@@ -3,9 +3,9 @@
 from sqlalchemy import and_, distinct
 import pandas as pd
 
-import sys
-if '..' not in sys.path:
-    sys.path.append('..')
+import os,sys
+parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(parent_path)
 from tushare_feed.models import stock_index_weight,sw_industry,sw_industry_detail,csi_industry,csi_industry_detail,\
                                     csrc_industry,csrc_industry_detail
 from tushare_feed.index import main_index_names,csi_sector_names,sw_sector_names,stock_index_names_all
@@ -27,7 +27,7 @@ def generate_index_name_id_dict():
             _stock_index_name_to_id[name] = 900300
         else:
             _stock_index_name_to_id[name] = int(v[0]) + 900000
-    for k,v in _stock_index_name_to_id.iteritems():
+    for k,v in _stock_index_name_to_id.items():
         _stock_index_id_to_name[v] = k
         
 def stock_index_name_to_id(name):
@@ -126,10 +126,10 @@ class StockIndex():
             self.stock2index[ins_id] = set()
             self.stock2index[ins_id].add(self.zz800_code)
         for ins_id in self.default_ins_set[self.zz500_code]:
-            if self.stock2index.has_key(ins_id):
+            if ins_id in self.stock2index:
                 self.stock2index[ins_id].add(self.zz500_code)
         for ins_id in self.default_ins_set[self.hs300_code]:
-            if self.stock2index.has_key(ins_id):
+            if ins_id in self.stock2index:
                 self.stock2index[ins_id].add(self.hs300_code)
     
     #default the newest index component
@@ -137,7 +137,7 @@ class StockIndex():
 
         if ( start_date == self.default_effective_date) \
             and (end_date == self.default_ineffective_date ) \
-                and ( index_code in self.default_ins_set.keys() ):
+                and ( index_code in list(self.default_ins_set.keys()) ):
             return self.default_ins_set[index_code]
 
         ss = self.index_component.get_session()
@@ -164,7 +164,7 @@ class StockIndex():
         index_code = [i[0] for i in ret.all()]
         ss.close()
         if len(index_code) > 0:
-            if self.stock2index.has_key(ins_id):
+            if ins_id in self.stock2index:
                 self.stock2index[ins_id] |= set(index_code)
             else:
                 self.stock2index[ins_id] = set(index_code)
@@ -226,25 +226,25 @@ class StockIndustry():
             return ''
 
 def test_index():
-    print stock_index_name_to_id('399300.SZ')
-    print stock_index_id_to_name(900300)
-    print _stock_index_name_to_id
-    print stock_id2name(900300)
-    print stock_id2name(600030)
-    print stock_name2id('399300.SZ')
-    print stock_name2id('600300.SH')
+    print(stock_index_name_to_id('399300.SZ'))
+    print(stock_index_id_to_name(900300))
+    print(_stock_index_name_to_id)
+    print(stock_id2name(900300))
+    print(stock_id2name(600030))
+    print(stock_name2id('399300.SZ'))
+    print(stock_name2id('600300.SH'))
     
 def test_stock_index():
     si = StockIndex()
-    for k,v in si.default_ins_set.iteritems():
-        print k,len(v)
-        print v
+    for k,v in si.default_ins_set.items():
+        print(k,len(v))
+        print(v)
         
 def test_stock_industry():
     si = StockIndustry('sw')
-    print si.get_industry_names(lv = 'l2')
-    print si.ins_name2industry('000001.SZ')
-    print si.ins_name2industry_fast('000001.SZ')
+    print(si.get_industry_names(lv = 'l2'))
+    print(si.ins_name2industry('000001.SZ'))
+    print(si.ins_name2industry_fast('000001.SZ'))
     
 if __name__ == '__main__':
     test_stock_industry()

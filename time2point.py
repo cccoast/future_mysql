@@ -84,7 +84,8 @@ class DayMode(object):
 
         self.other_last = count
 
-    def fcffex_time2spot(self, (hour, minn, sec, milli)):
+    def fcffex_time2spot(self, xxx_todo_changeme):
+        (hour, minn, sec, milli) = xxx_todo_changeme
         nth = int(((hour * 3600000 + minn * 60000 + sec * 1000 + milli) -
                    self.BEGIN_MILLI_SEC) / self.INTERVAL)
         if nth < self.LOWWER_BOUND or nth >= self.UPPER_BOUND:
@@ -92,7 +93,8 @@ class DayMode(object):
         else:
             return self.cffex_time2point[nth]
 
-    def fother_time2spot(self, (hour, minn, sec, milli)):
+    def fother_time2spot(self, xxx_todo_changeme1):
+        (hour, minn, sec, milli) = xxx_todo_changeme1
         nth = int(((hour * 3600000 + minn * 60000 + sec * 1000 + milli) -
                    self.BEGIN_MILLI_SEC) / self.INTERVAL)
         if nth < self.LOWWER_BOUND or nth >= self.UPPER_BOUND:
@@ -116,17 +118,17 @@ class DayMode(object):
         break_spots = ( self.other_time2point[ (self.OtherBreak.morning_begin )  ],\
                         self.other_time2point[ (self.OtherBreak.morning_break_end )  ],\
                             self.other_time2point[ (self.OtherBreak.afternoon_begin  )  ] )
-        break_millis = map(self.fother_spot2time, break_spots)
+        break_millis = list(map(self.fother_spot2time, break_spots))
         return break_spots, break_millis
 
     def get_cffex_break_info(self):
         break_spots = ( self.cffex_time2point[ (self.CFFEX.morning_begin )  ],\
                             self.cffex_time2point[ (self.CFFEX.afternoon_begin ) ] )
-        break_millis = map(self.fcffex_spot2time, break_spots)
+        break_millis = list(map(self.fcffex_spot2time, break_spots))
         return break_spots, break_millis
 
 
 if __name__ == '__main__':
     mode = DayMode()
-    print mode.get_cffex_break_info()
-    print mode.get_other_break_info()
+    print(mode.get_cffex_break_info())
+    print(mode.get_other_break_info())

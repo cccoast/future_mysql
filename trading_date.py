@@ -1,3 +1,8 @@
+import sys,os
+parent_path = os.path.dirname(os.path.realpath(__file__))
+if parent_path not in sys.path:
+    sys.path.append(parent_path)
+
 import dbBase as db
 
 from sqlalchemy import Column, Integer, String, Float
@@ -12,7 +17,7 @@ from itertools import chain
 
 from misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day,\
                     get_specical_monthday_in_date_range,get_first_bigger_day_than_special_monthday
-
+                    
 
 def get_all_table_names(dbname):
     sql = r"select table_name from information_schema.tables where table_schema='{0}' and table_type='base table';".format(
@@ -42,7 +47,7 @@ class AllTradingDays(db.DB_BASE):
         ss = self.session()
         records = ss.query(self.table_struct).all()
         ss.close()
-        return map(lambda x: int(x.date), records)
+        return [int(x.date) for x in records]
     
     def get_first_bigger_than(self, idate):
         ss = self.get_session()
@@ -107,15 +112,15 @@ class futureOrder(db.DB_BASE):
         dates = FutureDates()
         trading_days = dates.get_trading_day_list()
         last_trading_day = trading_days[-1]
-        print 'first day = ', trading_days[0], ' last_trading_day = ', last_trading_day
+        print('first day = ', trading_days[0], ' last_trading_day = ', last_trading_day)
         weekdays = [
-            i for i in chain(*get_nth_specical_weekday_in_daterange(trading_days[0], last_trading_day, weekday, nth).values())
+            i for i in chain(*list(get_nth_specical_weekday_in_daterange(trading_days[0], last_trading_day, weekday, nth).values()))
         ]
-        exchange_rolling_days = map(lambda x: dates.get_first_less_than(x),weekdays)
+        exchange_rolling_days = [dates.get_first_less_than(x) for x in weekdays]
         trading_days_series = pd.Series(
-            index=trading_days, data=range(len(trading_days)))
+            index=trading_days, data=list(range(len(trading_days))))
         roll_days_dict = {year: {}
-            for year in np.unique(map(lambda x: int(x / 10000), exchange_rolling_days))
+            for year in np.unique([int(x / 10000) for x in exchange_rolling_days])
         }
         for day in exchange_rolling_days:
             year = int(day / 10000)
@@ -127,11 +132,11 @@ class futureOrder(db.DB_BASE):
         dates = FutureDates()
         trading_days = dates.get_trading_day_list()
         exchange_rolling_days = get_first_bigger_day_than_special_monthday(trading_days, 15)
-        trading_days_series = pd.Series(index=trading_days, data=range(len(trading_days)))
+        trading_days_series = pd.Series(index=trading_days, data=list(range(len(trading_days))))
         roll_days_dict = {
             year: {}
             for year in np.unique(
-                map(lambda x: int(x / 10000), exchange_rolling_days))
+                [int(x / 10000) for x in exchange_rolling_days])
         }
         for day in exchange_rolling_days:
             year = int(day / 10000)
@@ -149,13 +154,13 @@ class futureOrder(db.DB_BASE):
 #         print rolling_day,exchang_rolling_day
         trading_day_list = dates.get_trading_day_list()
         #if date order already exists, then skip
-        print 'force_reload = ', force_reload
+        print('force_reload = ', force_reload)
         if force_reload:
             all_records = self.query_obj(self.future_order_struct)
             self.delete_lists_obj(all_records)
             exists_order_dates = []
         else:
-            exists_order_dates = set(map(lambda x: int(x.date), self.query_obj(self.future_order_struct)))
+            exists_order_dates = set([int(x.date) for x in self.query_obj(self.future_order_struct)])
 
         for date in trading_day_list:
             cffex_table_obj = data_model_min(
@@ -166,7 +171,7 @@ class futureOrder(db.DB_BASE):
             if not force_reload:
                 if date in exists_order_dates:
                     continue
-            print date, rolling_day[year][month], exchang_rolling_day[year][month]
+            print(date, rolling_day[year][month], exchang_rolling_day[year][month])
             if method == 'fixed_days':
                 sql = 'select distinct id from {}.{} order by id asc;'.format(dbname, str(date))
                 tickers = cffex_table_obj.execute_sql(sql)
@@ -175,7 +180,7 @@ class futureOrder(db.DB_BASE):
                     orders[0], orders[1] = orders[1], orders[0]
                 to_be_inserted = [date,]
                 to_be_inserted.extend(orders)
-                print to_be_inserted
+                print(to_be_inserted)
                 self.insert_listlike(self.future_order_struct, to_be_inserted,True)
 
     def set_order_shfex(self,ticker = 'au',method = 'avg_volume_open_interest',\
@@ -186,22 +191,22 @@ class futureOrder(db.DB_BASE):
         dbname = tick_info.get_dbname(ticker, 'day')
         table_name = tick_info.get_table_name(ticker, trading_day_list[0],'day')
         rolling_day = self.get_exchange_rollling_day_shfex(offset = fixed_days)
-        print dbname, table_name, rolling_day
-        print 'force_reload = ', force_reload
+        print(dbname, table_name, rolling_day)
+        print('force_reload = ', force_reload)
         if force_reload:
             all_records = self.query_obj(self.future_order_struct)
             self.delete_lists_obj(all_records)
             exists_order_dates = []
         else:
             exists_order_dates = set(
-                map(lambda x: int(x.date),self.query_obj(self.future_order_struct)))
+                [int(x.date) for x in self.query_obj(self.future_order_struct)])
 
         shfex_table_obj = data_model_day(db_name=dbname, table_name=table_name)
         if not shfex_table_obj.check_table_exist():
-            print 'shfex day data does not exist!'
+            print('shfex day data does not exist!')
             return -1
         df = pd.read_sql_table(table_name, shfex_table_obj.engine)
-        trading_day_series = pd.Series(index=trading_day_list, data=range(len(trading_day_list)))
+        trading_day_series = pd.Series(index=trading_day_list, data=list(range(len(trading_day_list))))
 
         for date in trading_day_list:
             year, month, day = get_year_month_day(date)
@@ -215,7 +220,7 @@ class futureOrder(db.DB_BASE):
                     rolling_date = rolling_day[year + int((month + 1) / 12)][int((month + 1) % 12)]
                 except:
                     rolling_date = rolling_day[year][month]
-            print date, rolling_date
+            print(date, rolling_date)
             if method == 'avg_volume_open_interest':
                 nth_day = trading_day_series[rolling_date]
                 forward_days = fixed_days if nth_day >= fixed_days else nth_day
@@ -224,11 +229,11 @@ class futureOrder(db.DB_BASE):
                 vol_dict = {}
                 for real_ticker_id, sub_sub_df in sub_df.groupby('id'):
                     vol_dict[real_ticker_id] = sub_sub_df[sub_sub_df.columns[1:3]].sum().sum()
-                vol_list = sorted(vol_dict.items(), key=lambda x: x[1], reverse=True)
+                vol_list = sorted(list(vol_dict.items()), key=lambda x: x[1], reverse=True)
                 order = [pair[0] for pair in vol_list]
                 to_be_inserted = [date,]
                 to_be_inserted.extend(order)
-                print order
+                print(order)
                 self.insert_listlike(self.future_order_struct, to_be_inserted,True)
 
 
@@ -237,7 +242,7 @@ def import_trading_days():
     df = pd.read_csv(infile, parse_dates=[0])
     df['date'] = df['date'].apply(
         lambda x: int(x.year * 10000 + x.month * 100 + x.day))
-    print df.head()
+    print(df.head())
     dates = AllTradingDays()
     df.to_sql('all_trading_days',dates.engine,index=False,if_exists='append',chunksize=2048)
 
@@ -262,7 +267,7 @@ def set_future_trading_day_list(dbname):
         table_obj = data_model_tick(db_name=dbname, table_name=str(date))
         if table_obj.check_table_exist():
             valids.append(date)
-    print 'valids = ', len(valids)
+    print('valids = ', len(valids))
 
     #remove all
     if_dates = FutureDates()
@@ -271,21 +276,21 @@ def set_future_trading_day_list(dbname):
 
     #reinsert
     if_dates.insert_lists(if_dates.table_struct, valids, True)
-    print 'future trading day list imported!'
+    print('future trading day list imported!')
     
 def set_stock_trading_day_list():
     sql = "SELECT distinct(effective_date) FROM stock.b_stock_reprice where \
                 stock_code = '000001.SZ' order by effective_date;"
     stock_reprice_model = stock_data_model_stock_price()
     df = pd.read_sql(sql,stock_reprice_model.engine)
-    print df.head()
+    print(df.head())
     
     stock_dates = StockDates()
     all_records = stock_dates.query_obj(stock_dates.table_struct)
     stock_dates.delete_lists_obj(all_records)
     
     stock_dates.insert_lists(stock_dates.table_struct,[int(i) for i in df['effective_date'].values],True)
-    print 'stock trading day list imported!'
+    print('stock trading day list imported!')
     
 def erase_invalid_table(dbname, level='tick'):
     tables = get_all_table_names(dbname)
@@ -295,14 +300,14 @@ def erase_invalid_table(dbname, level='tick'):
         model = data_model_min
     else:
         return 0
-    print 'start to erase'
+    print('start to erase')
     valid_trading_days = set(
-        map(lambda x: str(x), AllTradingDays().get_trading_day_list()))
+        [str(x) for x in AllTradingDays().get_trading_day_list()])
     for i in tables:
         if i not in valid_trading_days:
             to_be_erased = model(dbname, i)
             to_be_erased.drop_table(i)
-            print 'drop table = ', i
+            print('drop table = ', i)
 
 
 def adjust_if_days(dbname):
@@ -315,17 +320,17 @@ def check_cffex_shfex_align():
     trading_day_list = (AllTradingDays().get_trading_day_list())
     a = get_all_table_names('cffex_if')
     b = get_all_table_names('shfex_au')
-    print a
-    print b
+    print(a)
+    print(b)
     a = set(a)
     b = set(b)
     diff = (a | b) - (a & b)
     odd = sorted(list(diff))
-    print odd
+    print(odd)
     #what a has but b does not
-    print 'what a has but b does not = ', sorted(list(a & diff))
+    print('what a has but b does not = ', sorted(list(a & diff)))
     #what b has but a does not
-    print 'what b has but a does not = ', sorted(list(b & diff))
+    print('what b has but a does not = ', sorted(list(b & diff)))
 
 
 def init():
@@ -335,7 +340,7 @@ def init():
 #     erase_invalid_table('cffex_if')
 #     set_future_order_if()
     
-    print 'set au trading_days && order'
+    print('set au trading_days && order')
 #     set_future_trading_day_list('shfex_au')
 #     erase_invalid_table('shfex_au')
     set_future_order_au()
@@ -345,5 +350,5 @@ def init():
     
 if __name__ == '__main__':
     days = AllTradingDays()
-    print days.get_first_bigger_than(20090101)
+    print(days.get_first_bigger_than(20090101))
     

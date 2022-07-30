@@ -1,4 +1,9 @@
 #coding:utf-8
+import sys,os
+parent_path = os.path.dirname(os.path.realpath(__file__))
+if parent_path not in sys.path:
+    sys.path.append(parent_path)
+    
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
 import dbBase as db
@@ -230,8 +235,8 @@ def import_new_trading_days():
             reprice.table_struct, stock_code='000001.SZ')
     ])
 
-    print len(all_days)
-    print len(stock_days)
+    print(len(all_days))
+    print(len(stock_days))
 
     new_trading_days = sorted(stock_days - all_days)
     trading_day_obj.insert_lists(
@@ -244,9 +249,9 @@ def import_database():
     cmd  = r'mysql -uxudi -p123456 stock < {}'
     os.chdir(src_path)
     for sql in sqls: 
-        print sql
+        print(sql)
         os.system(cmd.format(sql))
-    print 'done'
+    print('done')
 
 if __name__ == '__main__':
-    print stock_id2name(900300)
+    print(stock_id2name(900300))

@@ -8,11 +8,10 @@ from collections.abc import Iterable
 
 class DB_BASE(object):
 
-    def __init__(self, db_name):
+    def __init__(self, db_name, _connect_str = "mysql+pymysql://xudi:123456@127.0.0.1:3306/{0}?charset=utf8" ):
 
         self.db_name = db_name
-        connect_str = "mysql+pymysql://xudi:123456@127.0.0.1:3306/{0}?charset=utf8".format(
-            db_name)
+        connect_str = _connect_str.format(db_name)
 
         self.engine = create_engine(connect_str, echo=False, encoding = "utf8")
         self.meta = MetaData(bind=self.engine)
@@ -49,7 +48,7 @@ class DB_BASE(object):
 
     def insert_data_frame(self, _class, df, merge = False, chunk_size = 1024):
         magic_number = chunk_size
-        print(len(df))
+        print((len(df)))
         if len(df) < magic_number:
             self.insert_dicts(_class, df.to_dict('records'), merge)
         else:
@@ -79,10 +78,10 @@ class DB_BASE(object):
         session.close()
 
     def insert_lists(self, _class, _lists, merge=False):
-        cols = _class.__table__.c.keys()
+        cols = list(_class.__table__.c.keys())
         if len(cols) > 1:
             if isinstance(_lists[0], Iterable):
-                _dicts = [dict(zip(cols, val)) for val in _lists]
+                _dicts = [dict(list(zip(cols, val))) for val in _lists]
             else:
                 _dicts = [{cols[i]: val} for i, val in enumerate(_lists)]
         else:
@@ -91,7 +90,7 @@ class DB_BASE(object):
         self.insert_dicts(_class, _dicts, merge)
 
     def insert_listlike(self, _class, val, merge=False):
-        _dict = dict(zip(_class.__table__.c.keys(), val))
+        _dict = dict(list(zip(list(_class.__table__.c.keys()), val)))
         self.insert_dictlike(_class, _dict, merge)
 
     def insert_objs(self, obj_lists):
@@ -119,11 +118,11 @@ class DB_BASE(object):
         session = self.get_session()
         table = _class.__table__
         if not _key:
-            _key = table.primary_key.columns.keys()
+            _key = list(table.primary_key.columns.keys())
         _lists = None
         if isinstance(_values, list):
             if isinstance(_values[0], collections.Iterable):
-                _lists = [dict(zip(_key, iv)) for iv in _values]
+                _lists = [dict(list(zip(_key, iv))) for iv in _values]
             else:
                 _lists = [{_key[0]: val} for val in _values]
         else:
@@ -138,7 +137,7 @@ class DB_BASE(object):
         session.commit()
 
     def get_column_names(self, _class):
-        return _class.__table__.c.keys()
+        return list(_class.__table__.c.keys())
 
     def get_column_obj(self, _class, key):
         return _class.__table__.columns[key]
@@ -147,7 +146,7 @@ class DB_BASE(object):
         return _class.__table__.columns
         
     def get_primary_key(self, _class):
-        return _class.__table__.primary_key.columns.keys()
+        return list(_class.__table__.primary_key.columns.keys())
 
     def get_primary_key_obj(self, _class):
         return _class.__table__.primary_key.columns
@@ -170,14 +169,14 @@ class DB_UNI_TEST(DB_BASE):
                         Column('_id', String(45)))
         table_struct = self.quick_map(t201301)
 
-        print(table_struct.__table__.columns)
+        print((table_struct.__table__.columns))
 
         _id = "if"
 
         session = self.get_session()
         all_records = session.query(table_struct).all()
         for irecord in all_records:
-            print(irecord._id, irecord.point)
+            print((irecord._id, irecord.point))
             session.delete(irecord)
         session.commit()
         session.close()
@@ -186,17 +185,17 @@ class DB_UNI_TEST(DB_BASE):
 
         dicts = []
         for i in range(10):
-            _idict = dict(zip(col_names, (i, _id + str(i))))
+            _idict = dict(list(zip(col_names, (i, _id + str(i)))))
             dicts.append(_idict)
 
         print(dicts)
         self.insert_dicts(table_struct, dicts, True)
 
-        self.insert_obj(table_struct(**dict(zip(col_names, (99, 'test')))))
+        self.insert_obj(table_struct(**dict(list(zip(col_names, (99, 'test'))))))
 
         objs = [
-            table_struct(**dict(zip(col_names, (100, 'xdd')))),
-            table_struct(**dict(zip(col_names, (101, 'lyx'))))
+            table_struct(**dict(list(zip(col_names, (100, 'xdd'))))),
+            table_struct(**dict(list(zip(col_names, (101, 'lyx')))))
         ]
         self.insert_objs(objs)
 
@@ -215,4 +214,4 @@ if __name__ == '__main__':
     dbapi.show()
     import pandas as pd
     df = pd.read_sql_table('test',dbapi.engine)
-    print(df.head())
+    print((df.head()))
