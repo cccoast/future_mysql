@@ -65,10 +65,11 @@ def get_specical_monthday_in_date_range(start_day, end_day, month_day):
 
 
 def get_nth_specical_weekday_in_daterange(start_day, end_day, weekday, nth):
+    st = pd.to_datetime(str(start_day))
+    start_day = st.year * 10000 + st.month * 100 + 1
     dates = get_specical_weekday_in_daterange(start_day, end_day, weekday)
     ret = {}
     for year, year_dates in dates.groupby(lambda x: x.year):
-        #         print year,year_dates
         ret[year] = [ timestamp2int(month_nth.index[nth]) for month,month_nth in year_dates.groupby(by = lambda x: x.month) \
                                                             if len(month_nth) > nth ]
     return ret
@@ -86,7 +87,5 @@ def get_first_bigger_day_than_special_monthday(dates, monthday):
 
 
 if __name__ == '__main__':
-    print(get_nth_specical_weekday_in_daterange(20140101, 20151231, 5, 2))
-    print(get_specical_monthday_in_date_range(20140101, 20150101, 15))
-    print(get_first_bigger_day_than_special_monthday(
-        get_dates_range_timestamp(20140101, 20150101), 15))
+    print(get_nth_specical_weekday_in_daterange(20090101, 20090131, 5, 2))
+

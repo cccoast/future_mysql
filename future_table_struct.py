@@ -124,7 +124,7 @@ class data_model_day(db.DB_BASE):
             return self.table_struct.exists()
 
 
-class Ticker(object):
+class FutureTicker(object):
 
     def __init__(self):
         self.tid_dict = {}
@@ -219,6 +219,6 @@ class Ticker(object):
 
 
 if __name__ == '__main__':
-    tick_info = Ticker()
+    tick_info = FutureTicker()
     print(tick_info.get_break_table_name('au'))
     print(tick_info.get_break_table_name('if'))

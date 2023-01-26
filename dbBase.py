@@ -211,7 +211,5 @@ class DB_UNI_TEST(DB_BASE):
 
 if __name__ == '__main__':
     dbapi = DB_UNI_TEST('test')
-    dbapi.show()
-    import pandas as pd
-    df = pd.read_sql_table('test',dbapi.engine)
-    print((df.head()))
+    dbapi.quick_map()
+    print(dbapi.__table__)

@@ -6,73 +6,107 @@ import pandas as pd
 import os,sys
 parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(parent_path)
+
 from tushare_feed.models import stock_index_weight,sw_industry,sw_industry_detail,csi_industry,csi_industry_detail,\
                                     csrc_industry,csrc_industry_detail
-from tushare_feed.index import main_index_names,csi_sector_names,sw_sector_names,stock_index_names_all
+from tushare_feed.index import main_index_names,csi_sector_names,sw_sector_names,stockindex_names_all
 
-_stock_index_name_to_id = None
-_stock_index_id_to_name = None
+global_stock_ins_id_list = None
 
-def generate_index_name_id_dict():
-    global _stock_index_name_to_id 
-    global _stock_index_id_to_name
-    _stock_index_name_to_id = {}
-    _stock_index_id_to_name = {}
-    for name in stock_index_names_all:
-        v = name.split('.')
-        #sw id
-        if len(v) == 1:
-            _stock_index_name_to_id[name] = int(name)
-        elif name.upper() == '399300.SZ':
-            _stock_index_name_to_id[name] = 900300
-        else:
-            _stock_index_name_to_id[name] = int(v[0]) + 900000
-    for k,v in _stock_index_name_to_id.items():
-        _stock_index_id_to_name[v] = k
+def get_global_stock_ins_id_list():
+    return global_stock_ins_id_list
+
+class GlobalVar(object):
+
+    def __init__(self):
+        self.basic_path = r'E:\win_datacenter'
+
+        self.sample_freq = {}
+        self.sample_freq['tick'] = 500
+        self.sample_freq['1min'] = 60000
+        self.sample_freq['5min'] = 300000
         
-def stock_index_name_to_id(name):
-    global stock_index_name_to_id
-    if _stock_index_name_to_id is None:
-        generate_index_name_id_dict()
-    return _stock_index_name_to_id[name]
+        self.STOCK_ID_MAX = 1000000
+        self.SW_SECTOR_ID_MIN,self.SW_SECTOR_ID_MAX = 1800000,1900000
+        self.STOCKINDEX_ID_MAX = 2000000
+        
+        self.BJ_ID_BEGIN = 800000
+        self.SH_ID_BEGIN = 600000
+        self.SZ_ID_BEGIN = 0
+        
+    def get_freq(self, freq):
+        if freq == 'tick':
+            return 500
+        elif freq.endswith('min'):
+            return int(freq[:-3]) * 60 * 1000
+        elif freq.endswith('day'):
+            return 3600 * 24 * 1000
+        
+_stockindex_name_to_id = None
+_stockindex_id_to_name = None
 
-def stock_index_id_to_name(id):
-    global _stock_index_name_to_id
-    if _stock_index_id_to_name is None:
+gv = GlobalVar()
+
+#指数 > 1000000
+def generate_index_name_id_dict():
+    global _stockindex_name_to_id 
+    global _stockindex_id_to_name
+    _stockindex_name_to_id = {}
+    _stockindex_id_to_name = {}
+    for name in stockindex_names_all:
+#         if name == '399300.SZ':
+#             v = '000300.SZ'
+        v = name.split('.')
+        _stockindex_name_to_id[name] = int(v[0]) + gv.STOCK_ID_MAX
+    for k,v in _stockindex_name_to_id.items():
+        _stockindex_id_to_name[v] = k
+        
+def stockindex_name_to_id(name):
+    global stockindex_name_to_id
+    if _stockindex_name_to_id is None:
         generate_index_name_id_dict()
-    return _stock_index_id_to_name[id]
+    return _stockindex_name_to_id[name]
+
+def stockindex_id_to_name(id):
+    global _stockindex_name_to_id
+    if _stockindex_id_to_name is None:
+        generate_index_name_id_dict()
+    return _stockindex_id_to_name[id]
     
 def is_stock_index_name(name):
-    return name in stock_index_names_all
+    return name in stockindex_names_all
 
 def is_stock_index_id(id):
-    name = stock_index_id_to_name(id)
+    name = stockindex_id_to_name(id)
     return is_stock_index_name(name)
-    
+
+#sector && ETF > 1000000
 def stock_id2name(_id):
     if isinstance(_id,str) and (_id.endswith('.SH') or _id.endswith('.SZ')):
         return _id
     inid = int(_id)
     _id = '{:0>6}'.format(_id)
     #index
-    if inid >= 699999:
-        return stock_index_id_to_name(inid)
-    elif inid >= 600000:
+    if inid >= gv.STOCK_ID_MAX:
+        return stockindex_id_to_name(inid)
+    elif inid >= gv.BJ_ID_BEGIN:
+        return _id + '.BJ'
+    elif inid >= gv.SH_ID_BEGIN:
         return _id + '.SH'
-    elif inid >= 0:
+    elif inid >= gv.SZ_ID_BEGIN:
         return _id + '.SZ'
     else:
         return None
 
 def stock_name2id(name):
-    is_index = name in stock_index_names_all
+    is_index = name in stockindex_names_all
     if is_index is True:
-        return stock_index_name_to_id(name)
+        return stockindex_name_to_id(name)
     else:
         return int(name.split('.')[0])
 
-    
-class Ticker(object):
+#股票ticker转化为id,stockindex,sector
+class StockTicker(object):
 
     def __init__(self):
         self.stock_index = StockIndex()
@@ -99,11 +133,12 @@ class Ticker(object):
     def id2industry(self, ins_id):
         return self.name2industry(stock_id2name(ins_id))
 
-    
+
+#stock_code to ETF    
 class StockIndex():
 
-    hs300_code, zz500_code, zz800_code = '399300.SZ', '000905.SH', '000906.SH'
-    default_effective_date   = 20090101
+    sz50_code, hs300_code, zz500_code, zz800_code = '000016.SH','399300.SZ', '000905.SH', '000906.SH'
+    default_effective_date = 20100101
     default_ineffective_date = 20300101
     
     def __init__(self):
@@ -114,9 +149,12 @@ class StockIndex():
         self.index_component.create_table()
 
         self.default_ins_set = {}
+        self.sz50_ins_set  = self.indexName2insIDs(index_code=self.sz50_code)
         self.hs300_ins_set = self.indexName2insIDs(index_code=self.hs300_code)
         self.zz500_ins_set = self.indexName2insIDs(index_code=self.zz500_code)
         self.zz800_ins_set = self.indexName2insIDs(index_code=self.zz800_code)
+        
+        self.default_ins_set[self.sz50_code] = self.sz50_ins_set
         self.default_ins_set[self.hs300_code] = self.hs300_ins_set
         self.default_ins_set[self.zz500_code] = self.zz500_ins_set
         self.default_ins_set[self.zz800_code] = self.zz800_ins_set
@@ -131,6 +169,9 @@ class StockIndex():
         for ins_id in self.default_ins_set[self.hs300_code]:
             if ins_id in self.stock2index:
                 self.stock2index[ins_id].add(self.hs300_code)
+        for ins_id in self.default_ins_set[self.sz50_code]:
+            if ins_id in self.stock2index:
+                self.stock2index[ins_id].add(self.sz50_code)
     
     #default the newest index component
     def indexName2insIDs(self, index_code=hs300_code, start_date = default_effective_date, end_date = default_ineffective_date):
@@ -149,7 +190,8 @@ class StockIndex():
         ret = ret.all()
         ss.close()
         return [int(i[0].split('.')[0]) for i in ret if len(i) > 0]
-
+    
+    #一个insID对应多少个index
     def insID2indexName(self, ins_id, start_date = default_effective_date, end_date = default_ineffective_date):
         ins_id = int(ins_id)
         ins_name = stock_id2name(ins_id)    
@@ -172,6 +214,7 @@ class StockIndex():
         else:
             return None
 
+#stock_code to sector
 class StockIndustry():
 
     def __init__(self,industry_type_code='sw'):
@@ -194,11 +237,15 @@ class StockIndustry():
         self.industry_stock_table.create_table()
 
         self.industry_df = pd.read_sql_table(self.industry_table.table_name,self.industry_table.engine)
+        self.industry_df.set_index(['l1_code','level'],inplace = True)
+        self.industry_df = self.industry_df.sort_index()
         self.industry_stock_df = pd.read_sql_table(self.industry_stock_table.table_name,self.industry_stock_table.engine)
+        self.industry_stock_df.set_index('symbol',inplace = True)
+        self.industry_stock_df = self.industry_stock_df.sort_index()
     
     def get_industry_names(self,lv = 'l1'):
         lvl_code = '_'.join((lv,'code'))
-        return pd.unique(self.industry_df.loc[:,lvl_code].values)
+        return pd.unique(self.industry_df.loc[:,lvl_code].dropna().apply(int).values)
         
     def ins_name2industry(self,ins_name,lv = 'l1'):
         lvl_code = '_'.join(('industry_code',lv))
@@ -207,29 +254,62 @@ class StockIndustry():
                             self.industry_stock_table.table_struct.stock_code == stock_name2id(ins_name)).first()
         ss.close()
         try:
-            if self.industry_type_code == 'sw':
-                return getattr(ret,lvl_code).split('.')[0]
-            else:
-                return getattr(ret,lvl_code)
+            return self.industry_df.loc[ (int(getattr(ret,lvl_code)),0) ,'industry_code'].values[0]
         except:
-            return ''
+            return '-1'
 
     def ins_name2industry_fast(self,ins_name,lv = 'l1'):
         lvl_code = '_'.join(('industry_code',lv))
-        name =  self.industry_stock_df.loc[ self.industry_stock_df['stock_code'] == stock_name2id(ins_name), lvl_code]
+        name =  int(self.industry_stock_df.loc[ ins_name , lvl_code])
         try:
-            if self.industry_type_code == 'sw':
-                return name.values[0].split('.')[0]
-            else:
-                return name.values[0]
+            return self.industry_df.loc[ (name,0) ,'industry_code'].values[0]
         except:
-            return ''
+            return '-1'
+
+### get instruments list
+def indexs2insList(index_list = None,effective_date = None,level = 'day'):
+    if index_list is not None:
+        global global_stock_ins_id_list
+        if global_stock_ins_id_list is not None:
+            return global_stock_ins_id_list
+        else:
+            stock_index = StockIndex()
+            ins_list = set()
+            for index_name in index_list:
+                #take care of the effective date
+                sub_ins_list = stock_index.indexName2insIDs(index_name,effective_date)
+                ins_list |= set(sub_ins_list)
+            ins_id_list = sorted(list(ins_list))
+#             ins_id_list.append(1399300)
+#             ins_id_list.append(1000905)
+#             ins_id_list.append(1000906)
+            for i in main_index_names:
+                ins_id_list.append(stockindex_name_to_id(i))
+            if level == 'day':
+                for i in sw_sector_names:
+                    ins_id_list.append(stockindex_name_to_id(i))
+            global_stock_ins_id_list = ins_id_list 
+            return global_stock_ins_id_list
+    return None
+
+def get_default_index_code_ids():
+    ins_id_list = []
+#             ins_id_list.append(1399300)
+#             ins_id_list.append(1000905)
+#             ins_id_list.append(1000906)
+    for i in main_index_names:
+        ins_id_list.append(stockindex_name_to_id(i))
+    for i in sw_sector_names:
+        ins_id_list.append(stockindex_name_to_id(i))
+    return ins_id_list
+
 
 def test_index():
-    print(stock_index_name_to_id('399300.SZ'))
-    print(stock_index_id_to_name(900300))
-    print(_stock_index_name_to_id)
-    print(stock_id2name(900300))
+    print(stockindex_name_to_id('000016.SH'))
+    print(stockindex_name_to_id('399300.SZ'))
+    print(stockindex_id_to_name(1399300))
+    print(_stockindex_name_to_id)
+    print(stock_id2name(1399300))
     print(stock_id2name(600030))
     print(stock_name2id('399300.SZ'))
     print(stock_name2id('600300.SH'))
@@ -242,10 +322,27 @@ def test_stock_index():
         
 def test_stock_industry():
     si = StockIndustry('sw')
+    print(si.get_industry_names(lv = 'l1'))
     print(si.get_industry_names(lv = 'l2'))
+    print(si.get_industry_names(lv = 'l3'))
     print(si.ins_name2industry('000001.SZ'))
+    print(si.ins_name2industry('000001.SZ',lv = 'l2'))
+    print(si.ins_name2industry('000001.SZ',lv = 'l3'))
+    
     print(si.ins_name2industry_fast('000001.SZ'))
-    
-if __name__ == '__main__':
+    print(si.ins_name2industry_fast('000001.SZ',lv = 'l2'))
+    print(si.ins_name2industry_fast('000001.SZ',lv = 'l3'))
+
+def test():
+    test_index()
+    test_stock_index()
     test_stock_industry()
+   
+if __name__ == '__main__':
+    si = StockIndustry()
+    a = si.ins_name2industry_fast(ins_name='000001.SZ')
     
+    st = StockTicker()
+    b = st.get_id(a)
+    
+    print(a,b)

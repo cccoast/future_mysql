@@ -80,10 +80,10 @@ class Sampler(object):
                         min_df.to_sql(str(iday),min_table.engine,index=False,if_exists='append')
 
         #start multiprocessing
-        sub_day_list = list(map(list,np.split(days, [
+        sub_day_list = list(np.split(days, [
                                len(days) / default_subprocess_numbers * i
                                for i in range(1, default_subprocess_numbers)
-                           ])))
+                           ]))
         run_paralell_tasks(sample_sub_day_list, sub_day_list)
 
 #         pool = Pool(default_subprocess_numbers)

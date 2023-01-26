@@ -11,11 +11,11 @@ from sqlalchemy.orm import sessionmaker
 
 import pandas as pd
 import numpy as np
-from future_table_struct import data_model_tick, data_model_min, data_model_day, Ticker
+from future_table_struct import data_model_tick, data_model_min, data_model_day, FutureTicker
 from stock_table_struct import stock_data_model_stock_price
 from itertools import chain
 
-from misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day,\
+from .misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day,\
                     get_specical_monthday_in_date_range,get_first_bigger_day_than_special_monthday
                     
 
@@ -94,7 +94,6 @@ class futureOrder(db.DB_BASE):
         db_name, table_name = 'dates', 'future_order' + '_' + ticker
         self.table_name = table_name
         super(futureOrder, self).__init__(db_name)
-        self.table_name = table_name
         ticker_columns = [
             '{0}{1:0>4}'.format(ticker, str(i))
             for i in range(1, num_of_tickers + 1)
