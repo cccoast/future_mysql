@@ -15,7 +15,10 @@ global_stock_ins_id_list = None
 
 def get_global_stock_ins_id_list():
     return global_stock_ins_id_list
-
+def set_global_stock_ins_id_list(l):
+    global global_stock_ins_id_list
+    global_stock_ins_id_list = l
+    
 class GlobalVar(object):
 
     def __init__(self):

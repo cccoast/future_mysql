@@ -82,6 +82,7 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date
         end_spot = spots_count - spots_count_perday
 
     ind_index = shm_api.id2index_ind(ind_id)
+    print(ind_id,ind_index,ins_id,ins_index)
     if ind_index < 0:
         return 
     unit_size = shm_header.getIndicatorsUnitSizeList()
@@ -99,6 +100,7 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date
         datas = datas[::120]
         print('datas too long, sample by 120 spots')
     plt.plot(datas)
+    plt.title(ind_id)
     plt.show()
 
 
@@ -181,12 +183,11 @@ def test_stock_unadjusted_price(ins_id,ipckey):
     for ind_id in ind_ids:
         get_data_from_memory(ind_id,ipckey,ins_id)
 
-def test_stock_all():
-    ins_id = 600030
-    ipckey = '0x0f0f0001'
+def test_stock_all(ipckey):
+    ins_id = 600030    
     test_stock_basic_indicators(ins_id,ipckey)
-    test_stock_ta_indicators(ins_id,ipckey)
-    test_stock_fundmental_indicators(ins_id,ipckey)
+#     test_stock_ta_indicators(ins_id,ipckey)
+#     test_stock_fundmental_indicators(ins_id,ipckey)
 #     ipckey = '0x0f0f0003'
 #     test_stock_unadjusted_price(ins_id,ipckey)
  
@@ -229,7 +230,7 @@ def plot_all(ipc):
     ind_index = shm.id2index_ind(103)
     ins_list  = header.getInstrumentsList()
     ins_count = header.getInstrumentsCount()
-    length = shm.getLastSpot(0)
+    length = len(shm.getTradingDayList())
     for step in range(0,header.getInstrumentsCount(),12):
         print(step)
         cur = step
@@ -253,5 +254,6 @@ def plot_all(ipc):
         plt.savefig(os.path.join(des_path,str(step)))
          
 if __name__ == '__main__':
-    get_nostruct_data_from_memory('0x0f0f0001','0x0e0e0001')
+    ipckey = '0x0f0f0005'
+    test_stock_all(ipckey)
     

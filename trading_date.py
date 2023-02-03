@@ -20,10 +20,8 @@ from .misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_m
                     
 
 def get_all_table_names(dbname):
-    sql = r"select table_name from information_schema.tables where table_schema='{0}' and table_type='base table';".format(
-        dbname)
-    connect_str = "mysql+pymysql://xudi:123456@localhost:3306/{0}".format(
-        dbname)
+    sql = r"select table_name from information_schema.tables where table_schema='{0}' and table_type='base table';".format(dbname)
+    connect_str = "mysql+pymysql://xudi:123456@localhost:3306/{0}".format(dbname)
     engine = create_engine(connect_str, echo=False)
     session = sessionmaker(bind=engine)
     ss = session()
