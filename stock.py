@@ -270,7 +270,7 @@ class StockIndustry():
             return '-1'
 
 ### get instruments list
-def indexs2insList(index_list = None,effective_date = None,level = 'day'):
+def indexs2insList(index_list = None,start_date = None,end_date = None,level = 'day'):
     if index_list is not None:
         global global_stock_ins_id_list
         if global_stock_ins_id_list is not None:
@@ -280,7 +280,7 @@ def indexs2insList(index_list = None,effective_date = None,level = 'day'):
             ins_list = set()
             for index_name in index_list:
                 #take care of the effective date
-                sub_ins_list = stock_index.indexName2insIDs(index_name,effective_date)
+                sub_ins_list = stock_index.indexName2insIDs(index_name,start_date,end_date)
                 ins_list |= set(sub_ins_list)
             ins_id_list = sorted(list(ins_list))
 #             ins_id_list.append(1399300)
