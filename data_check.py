@@ -253,12 +253,12 @@ def plot_all(ipc):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0005'
+    ipckey = '0x0f0f0008'
     ins_id = 600000
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0005')
-#     test_one()
+#     plot_all(ipc = '0x0f0f0007')
+    test_one()
 
     

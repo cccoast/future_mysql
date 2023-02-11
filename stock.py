@@ -178,7 +178,10 @@ class StockIndex():
     
     #default the newest index component
     def indexName2insIDs(self, index_code=hs300_code, start_date = default_effective_date, end_date = default_ineffective_date):
-
+        
+        start_date = self.default_effective_date   if start_date is None else start_date
+        end_date   = self.default_ineffective_date if end_date   is None else end_date
+        
         if ( start_date == self.default_effective_date) \
             and (end_date == self.default_ineffective_date ) \
                 and ( index_code in list(self.default_ins_set.keys()) ):
@@ -196,6 +199,10 @@ class StockIndex():
     
     #一个insID对应多少个index
     def insID2indexName(self, ins_id, start_date = default_effective_date, end_date = default_ineffective_date):
+        
+        start_date = self.default_effective_date   if start_date is None else start_date
+        end_date   = self.default_ineffective_date if end_date   is None else end_date
+        
         ins_id = int(ins_id)
         ins_name = stock_id2name(ins_id)    
 #         if ins_id in self.stock2index:
