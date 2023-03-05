@@ -1,28 +1,33 @@
+
+import os,sys
+parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+if parent_path not in sys.path:
+    sys.path.append(parent_path)
+    
 import dbBase as db
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 
-from future_table_struct import data_model_tick, data_model_min, data_model_day, Ticker
+from future_table_struct import data_model_tick, data_model_min, data_model_day, FutureTicker
 from trading_date import FutureDates
 from time2point import DayMode
 from misc import cffex_tickers, run_paralell_tasks
+
+from stock import StockTicker 
 
 import numpy as np
 import pandas as pd
 
 default_subprocess_numbers = 1
 
-min_columns = ('id','day','spot','Time','OpenPrice','HighPrice',\
-                            'ClosePrice','LowPrice','Volume','OpenInterest')
-day_columns = ('id','day','OpenPrice','HighPrice',\
-                            'LowPrice','ClosePrice','Volume','OpenInterest')
+min_columns = ('id','day','spot','Time','OpenPrice','HighPrice','ClosePrice','LowPrice','Volume','OpenInterest')
+day_columns = ('id','day','OpenPrice','HighPrice','LowPrice','ClosePrice','Volume','OpenInterest')
 
 
 class Sampler(object):
 
     def __init__(self, freq=1):
         dates = FutureDates()
-        self.trading_days = np.array(
-            [int(obj.date) for obj in dates.query_obj(dates.table_struct)])
+        self.trading_days = np.array([int(obj.date) for obj in dates.query_obj(dates.table_struct)])
         self.spots_gap = 120 * freq
 
     def sample_min(self, ticker, start_date= None, end_date= None, force_reload=False):
@@ -35,7 +40,7 @@ class Sampler(object):
             days = self.trading_days
 
         day_mode = DayMode()
-        ticker_info = Ticker()
+        ticker_info = FutureTicker()
 
         total_spots_tick = day_mode.cffex_last if ticker[:2] in cffex_tickers else day_mode.other_last
         total_spots_min = int(total_spots_tick / self.spots_gap)
@@ -97,7 +102,7 @@ class Sampler(object):
         #date range the same as min block
         days = self.trading_days
 
-        ticker_info = Ticker()
+        ticker_info = FutureTicker()
         db_name_min = ticker_info.get_dbname(ticker, level='min')
         db_name_day = ticker_info.get_dbname(ticker, level='day')
         table_name = ticker
@@ -137,10 +142,25 @@ class Sampler(object):
                            ])))
         run_paralell_tasks(sample_sub_day_list, sub_day_list)
 
+class StockMinSampler(object):
+    
+    BEGIN_MILLI_OF_DAY = 34200000  #9:30
+    LUNCH_BREAK_BEGIN  = 41400000  #11:30
+    LUNCH_BREAK_END    = 43200000  #13:01
+    END_MILLI_OF_DAY   = 54000000  #15:00
+    
+    SPOTS_OF_1MIN = 241
+    SPOTS_OF_5MIN = 49
+    
+    def one_to_N(self, N = 5):
+        one_min_to_five_min = [0,] * self.SPOTS_OF_1MIN
+        for i in range(1,self.SPOTS_OF_1MIN):
+            one_min_to_five_min[i] = int( ( i - 1 ) / N ) + 1
+        return one_min_to_five_min
 
 def debug_single_day_min(ticker, day=20140314, freq=120):
     spots_gap = 120 * freq
-    ticker_info = Ticker()
+    ticker_info = FutureTicker()
     day_mode = DayMode()
     total_spots_tick = day_mode.cffex_last if ticker[:
                                                      2] in cffex_tickers else day_mode.other_last
@@ -190,6 +210,6 @@ def init():
     sampler.sample_day('au', force_reload = True)
     
 if __name__ == '__main__':
-    sampler = Sampler()
-    sampler.sample_min('if', start_date = 20160101, end_date = 20160610, force_reload = False)
-    sampler.sample_day('if', force_reload = True)
+    sms = StockMinSampler()
+    v = sms.one_to_N(5)
+    

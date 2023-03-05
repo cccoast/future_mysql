@@ -213,7 +213,7 @@ def plot_adj_factor(ipc):
     plt.show()
     
     
-def plot_all(ipc):      
+def plot_all(ipc,strides = 60):      
     des_path = os.path.join('I:\data\datacheck',ipc)
     if not os.path.exists(des_path):
         os.mkdir(des_path)
@@ -230,13 +230,14 @@ def plot_all(ipc):
     ins_list  = header.getInstrumentsList()
     ins_count = header.getInstrumentsCount()
     length = ( len(shm.getTradingDayList()) - 1 ) * header.getSpotsCountPerDay()
+    print(ind_index,ins_count,length)
     for step in range(0,header.getInstrumentsCount(),12):
         print(step)
         cur = step
         axs = plt.figure(figsize=figsize, constrained_layout=True).subplots(rows, cols)
         for row in axs:
             for ax in row:
-                datas = shm.fetchDoubleDataList(ind_index,cur,0,length)[::60]
+                datas = shm.fetchDoubleDataList(ind_index,cur,0,length)[::strides]
                 try:
                     title = ' '.join(stock_df.loc[ins_list[cur],['stock_code','stock_name']].values)
                 except:
@@ -253,12 +254,12 @@ def plot_all(ipc):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0008'
-    ins_id = 600000
+    ipckey = '0x0f0f0004'
+    ins_id = 600030
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-#     plot_all(ipc = '0x0f0f0007')
-    test_one()
+    plot_all(ipc = '0x0f0f0004',strides = 1)
+#     test_one()
 
     

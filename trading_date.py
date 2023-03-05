@@ -15,7 +15,7 @@ from future_table_struct import data_model_tick, data_model_min, data_model_day,
 from stock_table_struct import stock_data_model_stock_price
 from itertools import chain
 
-from .misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day,\
+from future_mysql.misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day,\
                     get_specical_monthday_in_date_range,get_first_bigger_day_than_special_monthday
                     
 

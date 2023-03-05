@@ -22,7 +22,7 @@ def set_global_stock_ins_id_list(l):
 class GlobalVar(object):
 
     def __init__(self):
-        self.basic_path = r'E:\win_datacenter'
+        self.basic_path = r'D:\win_datacenter'
 
         self.sample_freq = {}
         self.sample_freq['tick'] = 500
