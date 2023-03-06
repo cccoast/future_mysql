@@ -93,12 +93,12 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date
         if ind_id == 113:
             datas = shm_api.fetchIntDataList(ind_index, ins_index, start_spot,end_spot)
         else:
-            datas = shm_api.fetchFloatDataList(ind_index, ins_index, start_spot,end_spot)
+            datas = shm_api.fetchFloatDataList(ind_index, ins_index, start_spot,end_spot)    
     
-    print(datas[::-1])
     if len(datas) > 100000:
         datas = datas[::120]
         print('datas too long, sample by 120 spots')
+    print(datas)
     plt.plot(datas)
     plt.title(ind_id)
     plt.show()
@@ -254,12 +254,12 @@ def plot_all(ipc,strides = 60):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0004'
-    ins_id = 600030
+    ipckey = '0x0f0f0011'
+    ins_id = 1000001
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0004',strides = 1)
+    plot_all(ipc = '0x0f0f0011',strides = 1)
 #     test_one()
 
     
