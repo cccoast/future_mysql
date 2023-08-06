@@ -152,6 +152,7 @@ class StockMinSampler(object):
     SPOTS_OF_1MIN = 241
     SPOTS_OF_5MIN = 49
     
+    #5分钟的第一个点是开盘点，实际只有一分钟的区间长度
     def one_to_N(self, N = 5):
         one_min_to_five_min = [0,] * self.SPOTS_OF_1MIN
         for i in range(1,self.SPOTS_OF_1MIN):

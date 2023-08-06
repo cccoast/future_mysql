@@ -79,7 +79,7 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date
     else:
         nth_day = 0
         start_spot = 0
-        end_spot = spots_count - spots_count_perday
+        end_spot = spots_count_perday * len(trading_day_list)
 
     ind_index = shm_api.id2index_ind(ind_id)
     print(ind_id,ind_index,ins_id,ins_index)
@@ -95,12 +95,19 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date
         else:
             datas = shm_api.fetchFloatDataList(ind_index, ins_index, start_spot,end_spot)    
     
+    ax = [ trading_day_list[ int(i/spots_count_perday) ] for i in np.arange(len(datas)) ]
     if len(datas) > 100000:
         datas = datas[::120]
+        ax    = ax[::120]
         print('datas too long, sample by 120 spots')
-    print(datas)
-    plt.plot(datas)
-    plt.title(ind_id)
+    
+    print(datas)    
+    fig, axes = plt.subplots(1, 1)
+    fig.set_size_inches(14, 8) 
+    axes.plot(datas)
+    axes.set_xticklabels(ax)
+    axes.set_title(ind_id)
+    plt.grid()
     plt.show()
 
 
@@ -254,12 +261,13 @@ def plot_all(ipc,strides = 60):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0011'
-    ins_id = 1000001
+    ipckey = '0x0f0f0030'
+    ins_id = 1
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0011',strides = 1)
-#     test_one()
+#     plot_all(ipc = '0x0f0f0030',strides = 60)
+    test_one()
+
 
     
