@@ -65,11 +65,11 @@ def check_trading_day_list(ipckey):
     trading_day_list = pd.Series(shm_api.getTradingDayList())
     print(trading_day_list)
 
-def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date = 20230101, day = None):
+def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date = 20240101, day = None):
     shm_api = ShmPybind.Shm(ipckey)
     shm_header = shm_api.getHeader()
     ins_index = shm_api.id2index_ins(ins_id)
-    trading_day_list = [ i for i in pd.Series(shm_api.getTradingDayList()) if start_date < i < end_date ]
+    trading_day_list = [ int(i) for i in pd.Series(shm_api.getTradingDayList()[:-1]) if start_date < i < end_date ]
     spots_count_perday = shm_header.getSpotsCountPerDay()
     spots_count = shm_header.getSpotsCount()
     if day is not None:
@@ -105,7 +105,9 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date
     fig, axes = plt.subplots(1, 1)
     fig.set_size_inches(14, 8) 
     axes.plot(datas)
-    axes.set_xticklabels(ax)
+    _strides = int( len(datas) / 10 )
+    axes.set_xticks(range(len(datas))[::_strides])
+    axes.set_xticklabels(ax[::_strides])
     axes.set_title(ind_id)
     plt.grid()
     plt.show()
@@ -261,7 +263,7 @@ def plot_all(ipc,strides = 60):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0030'
+    ipckey = '0x0f0f0031'
     ins_id = 1
     test_stock_all(ipckey,ins_id)
         
