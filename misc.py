@@ -1,4 +1,5 @@
 import pandas as pd
+import time
 from multiprocessing import Process,freeze_support
 
 timestamp2int = lambda x: x.year * 10000 + x.month * 100 + x.day
@@ -9,6 +10,10 @@ shfex_tickers = ['au', 'ag', 'cu', 'al', 'zn', 'rb', 'ru']
 
 unicode2utf8 = lambda x: x.encode('utf-8') if isinstance(x,str) else x
 unicode2cp936 = lambda x: x.encode('cp936') if isinstance(x,str) else x
+
+def get_today():
+    t = time.localtime()
+    return t.tm_year * 10000 + t.tm_mon * 100 + t.tm_mday
 
 def sorted_dict(indict, sort_value_index=1, reverse=True):
     return sorted(

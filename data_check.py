@@ -14,7 +14,7 @@ from tushare_feed.models import sw_industry,stock
 import matplotlib.pyplot as plt
 from itertools import chain
 from stock import StockTicker,StockIndex,StockIndustry
-from misc import run_paralell_tasks
+from misc import run_paralell_tasks,get_today
 # import ShmPython
 import ShmPybind
 import matplotlib.pyplot as plt
@@ -23,6 +23,9 @@ from matplotlib import rcParams
 rcParams['font.family'] = 'SimHei'
 
 st = StockTicker()
+
+default_start_date = 20090101
+default_end_date   = int(get_today())
 
 #test suspension days
 def test_suspension_days(ipckey,default_set = '000016.SH'):
@@ -65,11 +68,11 @@ def check_trading_day_list(ipckey):
     trading_day_list = pd.Series(shm_api.getTradingDayList())
     print(trading_day_list)
 
-def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date = 20240101, day = None):
+def get_data_from_memory(ind_id, ipckey, ins_id, start_date = default_start_date, end_date = default_end_date, day = None):
     shm_api = ShmPybind.Shm(ipckey)
     shm_header = shm_api.getHeader()
     ins_index = shm_api.id2index_ins(ins_id)
-    trading_day_list = [ int(i) for i in pd.Series(shm_api.getTradingDayList()[:-1]) if start_date < i < end_date ]
+    trading_day_list = [ int(i) for i in pd.Series(shm_api.getTradingDayList()[:-1]) if start_date <= i < end_date ]
     spots_count_perday = shm_header.getSpotsCountPerDay()
     spots_count = shm_header.getSpotsCount()
     if day is not None:
@@ -82,7 +85,6 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = 20100131, end_date
         end_spot = spots_count_perday * len(trading_day_list)
 
     ind_index = shm_api.id2index_ind(ind_id)
-    print(ind_id,ind_index,ins_id,ins_index)
     if ind_index < 0:
         return 
     unit_size = shm_header.getIndicatorsUnitSizeList()
@@ -263,13 +265,13 @@ def plot_all(ipc,strides = 60):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0031'
+    ipckey = '0x0f0f0061'
     ins_id = 1
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-#     plot_all(ipc = '0x0f0f0030',strides = 60)
-    test_one()
+    plot_all(ipc = '0x0f0f0040',strides = 1)
+#     test_one()
 
 
     

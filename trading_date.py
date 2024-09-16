@@ -1,5 +1,5 @@
 import sys,os
-parent_path = os.path.dirname(os.path.realpath(__file__))
+parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 if parent_path not in sys.path:
     sys.path.append(parent_path)
 
@@ -245,13 +245,13 @@ def import_trading_days():
 
 
 def set_future_order_if(force_reload=True):
-    num_of_ticker = Ticker().get_num_of_tickers('if', 20140102)
+    num_of_ticker = FutureTicker().get_num_of_tickers('if', 20140102)
     fo = futureOrder('if', num_of_ticker)
     fo.set_order_cffex(force_reload=force_reload)
 
 
 def set_future_order_au(force_reload=True):
-    num_of_ticker = Ticker().get_num_of_tickers('au', 20140102)
+    num_of_ticker = FutureTicker().get_num_of_tickers('au', 20140102)
     fo = futureOrder('au', num_of_ticker)
     fo.set_order_shfex(force_reload=force_reload)
 
@@ -347,5 +347,5 @@ def init():
     
 if __name__ == '__main__':
     days = AllTradingDays()
-    print(days.get_first_bigger_than(20090101))
+    print(len(days.get_trading_day_list()))
     

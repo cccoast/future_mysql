@@ -68,19 +68,19 @@ class Sampler(object):
 
                         min_df = pd.DataFrame(
                             index=list(range(total_spots_min)), columns=min_columns)
-                        min_df.ix[:, 'id'] = id
-                        min_df.ix[:, 'day'] = iday
-                        min_df.ix[:, 'spot'] = min_df.index
+                        min_df.loc[:, 'id'] = id
+                        min_df.loc[:, 'day'] = iday
+                        min_df.loc[:, 'spot'] = min_df.index
 
                         for tick_spot in range(0, total_spots_tick - self.spots_gap,self.spots_gap):
                             min_spot = tick_spot / self.spots_gap
-                            min_df.ix[min_spot, 'Time'] = tick_df.ix[tick_spot, 'Time'].split('.')[0]
-                            min_df.ix[min_spot, 'OpenPrice'] = float(tick_df.ix[tick_spot, 'LastPrice'])
-                            min_df.ix[min_spot, 'HighPrice'] = float(tick_df.ix[tick_spot:tick_spot + self.spots_gap - 1, 'LastPrice'].max())
-                            min_df.ix[min_spot, 'LowPrice'] = float( tick_df.ix[tick_spot:tick_spot + self.spots_gap - 1, 'LastPrice'].min())
-                            min_df.ix[min_spot, 'ClosePrice'] = float(tick_df.ix[tick_spot + self.spots_gap - 1,'LastPrice'])
-                            min_df.ix[min_spot, 'Volume'] = int(tick_df.ix[tick_spot + self.spots_gap - 1,'Volume'])
-                            min_df.ix[min_spot, 'OpenInterest'] = int(tick_df.ix[tick_spot + self.spots_gap - 1,'OpenInterest'])
+                            min_df.loc[min_spot, 'Time'] = tick_df.loc[tick_spot, 'Time'].split('.')[0]
+                            min_df.loc[min_spot, 'OpenPrice'] = float(tick_df.loc[tick_spot, 'LastPrice'])
+                            min_df.loc[min_spot, 'HighPrice'] = float(tick_df.loc[tick_spot:tick_spot + self.spots_gap - 1, 'LastPrice'].max())
+                            min_df.loc[min_spot, 'LowPrice'] = float( tick_df.loc[tick_spot:tick_spot + self.spots_gap - 1, 'LastPrice'].min())
+                            min_df.loc[min_spot, 'ClosePrice'] = float(tick_df.loc[tick_spot + self.spots_gap - 1,'LastPrice'])
+                            min_df.loc[min_spot, 'Volume'] = int(tick_df.loc[tick_spot + self.spots_gap - 1,'Volume'])
+                            min_df.loc[min_spot, 'OpenInterest'] = int(tick_df.loc[tick_spot + self.spots_gap - 1,'OpenInterest'])
 
                         min_df.to_sql(str(iday),min_table.engine,index=False,if_exists='append')
 
@@ -123,23 +123,19 @@ class Sampler(object):
                 min_table = data_model_min(db_name_min, str(iday))
                 if min_table.check_table_exist():
                     print(iday)
-                    min_df_all = pd.read_sql_table(
-                        str(iday), min_table.engine, index_col=['spot'])
+                    min_df_all = pd.read_sql_table(str(iday), min_table.engine, index_col=['spot'])
                     for ticker_id, min_df in min_df_all.groupby('id'):
-                        open_price = float(min_df.ix[0, 'OpenPrice'])
-                        close_price = float(min_df.ix[len(min_df) - 1, 'ClosePrice'])
+                        open_price = float(min_df.loc[0, 'OpenPrice'])
+                        close_price = float(min_df.loc[len(min_df) - 1, 'ClosePrice'])
                         high_price = float(min_df['HighPrice'].max())
                         low_price = float(min_df['LowPrice'].min())
-                        volume = int(min_df.ix[len(min_df) - 1, 'Volume'])
-                        open_interest = int(min_df.ix[len(min_df) - 1, 'OpenInterest'])
+                        volume = int(min_df.loc[len(min_df) - 1, 'Volume'])
+                        open_interest = int(min_df.loc[len(min_df) - 1, 'OpenInterest'])
                         to_be_inserted_list = (ticker_id,int(iday),open_price,high_price,low_price,close_price,volume,open_interest)
                         to_be_inserted_dict = dict(list(zip(day_columns, to_be_inserted_list)))
                         day_table.insert_dictlike(day_table.day_struct,to_be_inserted_dict,merge=True)
 
-        sub_day_list = list(map(list,np.split(days, [
-                               len(days) / default_subprocess_numbers * i
-                               for i in range(1, default_subprocess_numbers)
-                           ])))
+        sub_day_list = list(map(list,np.split(days, [len(days) / default_subprocess_numbers * i for i in range(1, default_subprocess_numbers)])))
         run_paralell_tasks(sample_sub_day_list, sub_day_list)
 
 class StockMinSampler(object):
@@ -173,30 +169,22 @@ def debug_single_day_min(ticker, day=20140314, freq=120):
     for id, tick_df in tick_df_all.groupby('id'):
         print(id)
         min_df = pd.DataFrame(index=list(range(total_spots_min)), columns=min_columns)
-        min_df.ix[:, 'id'] = id
-        min_df.ix[:, 'day'] = day
-        min_df.ix[:, 'spot'] = min_df.index
+        min_df.loc[:, 'id'] = id
+        min_df.loc[:, 'day'] = day
+        min_df.loc[:, 'spot'] = min_df.index
         for tick_spot in range(0, total_spots_tick - spots_gap, spots_gap):
             try:
                 min_spot = tick_spot / spots_gap
-                min_df.ix[min_spot, 'Time'] = tick_df.ix[tick_spot,
-                                                         'Time'].split('.')[0]
-                min_df.ix[min_spot, 'OpenPrice'] = float(
-                    tick_df.ix[tick_spot, 'LastPrice'])
-                min_df.ix[min_spot, 'HighPrice'] = float(
-                    tick_df.ix[tick_spot:tick_spot + spots_gap - 1, 'LastPrice']
-                    .max())
-                min_df.ix[min_spot, 'LowPrice'] = float(tick_df.ix[
-                    tick_spot:tick_spot + spots_gap - 1, 'LastPrice'].min())
-                min_df.ix[min_spot, 'ClosePrice'] = float(
-                    tick_df.ix[tick_spot + spots_gap - 1, 'LastPrice'])
-                min_df.ix[min_spot, 'Volume'] = int(
-                    tick_df.ix[tick_spot + spots_gap - 1, 'Volume'])
-                min_df.ix[min_spot, 'OpenInterest'] = int(
-                    tick_df.ix[tick_spot + spots_gap - 1, 'OpenInterest'])
+                min_df.loc[min_spot, 'Time'] = tick_df.loc[tick_spot,'Time'].split('.')[0]
+                min_df.loc[min_spot, 'OpenPrice'] = float(tick_df.loc[tick_spot, 'LastPrice'])
+                min_df.loc[min_spot, 'HighPrice'] = float(tick_df.loc[tick_spot:tick_spot + spots_gap - 1, 'LastPrice'].max())
+                min_df.loc[min_spot, 'LowPrice'] = float(tick_df.loc[tick_spot:tick_spot + spots_gap - 1, 'LastPrice'].min())
+                min_df.loc[min_spot, 'ClosePrice'] = float(tick_df.loc[tick_spot + spots_gap - 1, 'LastPrice'])
+                min_df.loc[min_spot, 'Volume'] = int(tick_df.loc[tick_spot + spots_gap - 1, 'Volume'])
+                min_df.loc[min_spot, 'OpenInterest'] = int(tick_df.loc[tick_spot + spots_gap - 1, 'OpenInterest'])
             except:
                 print(tick_spot)
-                print(tick_df.ix[tick_spot, 'Time'])
+                print(tick_df.loc[tick_spot, 'Time'])
                 exit(-1)
 
         print(min_df.head())
