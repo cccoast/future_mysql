@@ -51,7 +51,7 @@ class DayMode(object):
         OTHER_LUNCH_BREAK_END = 48600000  #13:30
         OTHER_END_MILLI_OF_DAY = 54000000  #15:00
 
-    def __init__(self,default_mode = 'after_2016'):
+    def __init__(self,default_mode = 'before_2016'):
         
         if default_mode == 'after_2016':
             self.CFFEX = self.CFFEX_after_2016

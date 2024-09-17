@@ -1,6 +1,12 @@
+#coding:utf-8
+import sys,os
+parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+if parent_path not in sys.path:
+    sys.path.append(parent_path)
+    
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy import Table
-import dbBase as db
+import future_mysql.dbBase as db
 import werkzeug.security as myhash
 
 class User(db.DB_BASE):
@@ -100,7 +106,6 @@ class data_model_day(db.DB_BASE):
 
     def __init__(self, db_name, table_name=None):
         super(data_model_day, self).__init__(db_name)
-
         self.table_struct = None
         if table_name is not None:
             self.table_struct = Table(
@@ -165,9 +170,8 @@ class FutureTicker(object):
         return None
 
     def get_id(self, ticker):
-        market_id, market_no = self.get_market_id(ticker), self.get_market_no(
-            ticker)
-        last = int([x for x in ticker if str.isdigit(x)])
+        market_id, market_no = self.get_market_id(ticker), self.get_market_no(ticker)
+        last = int(''.join([str(x) for x in ticker if str.isdigit(x)]))
         if market_id:
             return (market_id * 1000 + market_no) * 10000 + last
         else:
@@ -199,10 +203,11 @@ class FutureTicker(object):
         ticker = str.lower(ticker[:2])
         dbname = self.get_dbname(ticker, 'day')
         table_name = self.get_table_name(ticker, day, level='day')
-        #print dbname, table_name
+#         print(dbname, table_name)
         table = data_model_day(dbname, table_name)
         if table.check_table_exist():
             table.create_table()
+#             print(day)
             records = table.query_obj(table.day_struct, day=day)
             tickers = [rec.id for rec in records]
         else:
@@ -220,5 +225,4 @@ class FutureTicker(object):
 
 if __name__ == '__main__':
     tick_info = FutureTicker()
-    print(tick_info.get_break_table_name('au'))
-    print(tick_info.get_break_table_name('if'))
+    print(tick_info.get_id('if0001'))

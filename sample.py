@@ -10,9 +10,9 @@ from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from future_table_struct import data_model_tick, data_model_min, data_model_day, FutureTicker
 from trading_date import FutureDates,AllTradingDays
 from time2point import DayMode
-from misc import cffex_tickers, run_paralell_tasks
 
-from stock import StockTicker 
+from future_mysql.misc import cffex_tickers, run_paralell_tasks
+from future_mysql.stock import StockTicker 
 
 import numpy as np
 import pandas as pd

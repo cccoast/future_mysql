@@ -4,7 +4,7 @@ parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 if parent_path not in sys.path:
     sys.path.append(parent_path)
 
-import dbBase as db
+import future_mysql.dbBase as db
 
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy import create_engine, Table
@@ -12,13 +12,16 @@ from sqlalchemy.orm import sessionmaker
 
 import pandas as pd
 import numpy as np
-from future_table_struct import data_model_tick, data_model_min, data_model_day, FutureTicker
-from stock_table_struct import stock_data_model_stock_price
 from itertools import chain
 
+from future_mysql.future_table_struct import data_model_tick, data_model_min, data_model_day, FutureTicker
+from future_mysql.stock_table_struct import stock_data_model_stock_price
 from future_mysql.misc import get_nth_specical_weekday_in_daterange,timestamp2int,get_year_month_day,\
                     get_specical_monthday_in_date_range,get_first_bigger_day_than_special_monthday
-                    
+
+get_all_table_names = db.get_all_table_names
+future_time_switch_date = 20100416
+
 class AllTradingDays(db.DB_BASE):
 
     def __init__(self,db_name = 'dates',table_name = 'all_trading_days'):
@@ -77,13 +80,12 @@ class futureOrder(db.DB_BASE):
         
         if num_of_tickers is None:
             tick_info = FutureTicker()
-            day = FutureDates().get_trading_day_list()[0]
-            num_of_tickers = tick_info.get_num_of_tickers(ticker, day)
+            num_of_tickers = tick_info.get_num_of_tickers(ticker, future_time_switch_date)
             
         self.table_name = table_name
         
         ticker_columns = ['{0}{1:0>4}'.format(ticker, str(i)) for i in range(1, num_of_tickers + 1)]
-        #print(ticker_columns)
+        print(ticker_columns)
         self.table_struct = Table(table_name,self.meta,
                      Column('date',Integer,primary_key = True,autoincrement = False),\
                      *[ Column(i,String(20)) for i in ticker_columns ]
@@ -300,5 +302,8 @@ def init():
     set_future_order_if(start_date = 20100416, end_date = 20230101)
     
 if __name__ == '__main__':
-    init()
+    data_order = futureOrder('if0001')
+    print(data_order.get_column_names(data_order.future_order_struct))
+    order_record = data_order.query_obj(data_order.future_order_struct, date = 20100416)[0]
+    
     
