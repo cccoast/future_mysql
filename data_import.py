@@ -9,7 +9,6 @@ from future_table_struct import data_model_tick
 from trading_date import AllTradingDays
 from misc import cffex_tickers, shfex_tickers
 
-
 valid_dates = set([int(x) for x in AllTradingDays().get_trading_day_list()])
 
 def timeSplit(time_stamp):
@@ -285,14 +284,14 @@ def import_if_after_201610():
             import_tick_per_month_taobao('if',root_path,infiles,year,month,'after_2016')
 
 
-def clear_db(start_date,end_date):
-    sql = r'DELETE FROM cffex_if.{} WHERE 1=1'
+def clear_db(db_name,db_model,start_date,end_date):
+    sql = r'DELETE FROM {}.{} WHERE 1=1'
     valid_dates = [int(x) for x in AllTradingDays().get_trading_day_list() if start_date <= x < end_date]
     for date in valid_dates:
-        db = data_model_tick('cffex_if',date)
+        db = db_model(date)
         if db.check_table_exist():
             print(date)
-            db.execute_sql(sql.format(db.table_struct.name))
+            db.execute_sql(sql.format(db_name,db.table_struct.name))
             
 def import_2016_new():
     for month in range(1,10):

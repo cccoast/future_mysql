@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 
 from collections.abc import Iterable
+import itertools
 
 class DB_BASE(object):
 
@@ -157,6 +158,20 @@ class DB_BASE(object):
         ss.close()
         return ret
     
+def get_all_table_names(dbname):
+    sql = r"select table_name from information_schema.tables where table_schema='{0}' and table_type='base table';".format(dbname)
+    connect_str = "mysql+pymysql://xudi:123456@localhost:3306/{0}".format(dbname)
+    engine = create_engine(connect_str, echo=False)
+    session = sessionmaker(bind=engine)
+    ss = session()
+    records = ss.execute(sql)
+    ss.close()
+    return [j for j in itertools.chain(*[i for i in records])]
+
+def clear_table(db_name,db_model):
+    sql = r'DELETE FROM {}.{} WHERE 1=1'
+    if db_model.check_table_exist():
+        db_model.execute_sql(sql.format(db_name,db_model.table_struct.name))
 
 class DB_UNI_TEST(DB_BASE):
 
@@ -211,5 +226,4 @@ class DB_UNI_TEST(DB_BASE):
 
 if __name__ == '__main__':
     dbapi = DB_UNI_TEST('test')
-    dbapi.quick_map()
-    print(dbapi.__table__)
+    print(dbapi.show())

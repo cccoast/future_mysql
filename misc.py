@@ -1,6 +1,6 @@
 import pandas as pd
 import time
-from multiprocessing import Process,freeze_support
+import multiprocessing
 
 timestamp2int = lambda x: x.year * 10000 + x.month * 100 + x.day
 get_year_month_day = lambda x: (int(x/10000),int((x%10000)/100),int(x%100))
@@ -19,17 +19,29 @@ def sorted_dict(indict, sort_value_index=1, reverse=True):
     return sorted(
         list(indict.items()), key=lambda x: x[sort_value_index], reverse=reverse)
 
-
+#for linux
 def run_paralell_tasks(func, iter_args):
     tasks = []
-    freeze_support()
+    multiprocessing.freeze_support()
     for iarg in iter_args:
-        task = Process(target=func, args=(iarg,))
+        print(iarg)
+        task = multiprocessing.Process(target=func, args=(iarg,))
         tasks.append(task)
     for itask in tasks:
         itask.start()
     for itask in tasks:
         itask.join()
+
+#for windows    
+def win_multi_process(worker,args):
+    processes = []  
+    for i in range(len(args)):  
+        p = multiprocessing.Process(target=worker, args=(args[i],))  
+        processes.append(p)  
+        p.start()  
+  
+    for p in processes:  
+        p.join()
 
 
 def get_special_month_day(indate):
@@ -90,7 +102,8 @@ def get_first_bigger_day_than_special_monthday(dates, monthday):
                 ret.append(timestamp2int(first_bigger_day[0]))
     return ret
 
-
+def worker(num):
+    print(f'Worker: {num[0]},{num[1]}') 
+    
 if __name__ == '__main__':
-    print(get_nth_specical_weekday_in_daterange(20090101, 20090131, 5, 2))
-
+    win_multi_process(worker,[(0,1),(1,2)])
