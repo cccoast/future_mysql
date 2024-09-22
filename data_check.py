@@ -130,10 +130,7 @@ def get_nostruct_data_from_memory(ipckey, nostruct_ipckey):
     print(ins_name_list)
     print(ind_name_list)
 
-    milli_sec_list = [
-        nostruct_shm_api.getSpot2MilliSec(i)
-        for i in range(shm_header.getSpotsCountPerDay())
-    ]
+    milli_sec_list = [ nostruct_shm_api.getSpot2MilliSec(i) for i in range(shm_header.getSpotsCountPerDay()) ]
     spots_list = [nostruct_shm_api.getMilliSec2Spot(i) for i in milli_sec_list]
 
     print(milli_sec_list)
@@ -163,11 +160,7 @@ def check_adjust(ipckey1, ipckey2):
     plt.legend()
     plt.show()
     #pdiff.txt comes from what adjustor output, line 74
-    df = pd.read_csv(
-        '~/tmp/pdiff{}.txt'.format(ins_index + 1),
-        index_col=0,
-        header=None,
-        sep=' ')
+    df = pd.read_csv('~/tmp/pdiff{}.txt'.format(ins_index + 1),index_col=0,header=None,sep=' ')
     print(df[5].sum())
     
 #######################################unit test#############################################
@@ -223,7 +216,6 @@ def plot_adj_factor(ipc):
     plt.plot(datas)
     plt.show()
     
-    
 def plot_all(ipc,strides = 60):      
     des_path = os.path.join('I:\data\datacheck',ipc)
     if not os.path.exists(des_path):
@@ -243,8 +235,8 @@ def plot_all(ipc,strides = 60):
     length = ( len(shm.getTradingDayList()) - 1 ) * header.getSpotsCountPerDay()
     print(ind_index,ins_count,length)
     for step in range(0,header.getInstrumentsCount(),12):
-        print(step)
         cur = step
+        print(step)
         axs = plt.figure(figsize=figsize, constrained_layout=True).subplots(rows, cols)
         for row in axs:
             for ax in row:
@@ -252,10 +244,13 @@ def plot_all(ipc,strides = 60):
                 try:
                     title = ' '.join(stock_df.loc[ins_list[cur],['stock_code','stock_name']].values)
                 except:
-                    if int(ins_list[cur]) < 1000000:
-                        title = ' '.join(index_df.loc[ins_list[cur],['industry_code','l1_name',]].values)
-                    else:
-                        title = str(ins_list[cur])
+                    try:
+                        if int(ins_list[cur]) < 1000000:
+                            title = ' '.join(index_df.loc[ins_list[cur],['industry_code','l1_name',]].values)
+                        else:
+                            title = str(ins_list[cur])
+                    except:
+                        continue
                 ax.set_title(title)
                 ax.plot(datas)
                 cur += 1
@@ -270,7 +265,7 @@ def test_one():
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0040',strides = 1)
+    plot_all(ipc = '0x0f0f0081',strides = 1)
 #     test_one()
 
 
