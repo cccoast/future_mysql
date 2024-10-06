@@ -260,13 +260,13 @@ def plot_all(ipc,strides = 60):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0061'
-    ins_id = 1
+    ipckey = '0x0f0f0101'
+    ins_id = 600030
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0081',strides = 1)
-#     test_one()
+#     plot_all(ipc = '0x0f0f0081',strides = 1)
+    test_one()
 
 
     

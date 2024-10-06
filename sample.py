@@ -4,12 +4,12 @@ parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 if parent_path not in sys.path:
     sys.path.append(parent_path)
     
-import dbBase as db
+import future_mysql.dbBase as db
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 
-from future_table_struct import data_model_tick, data_model_min, data_model_day, FutureTicker
-from trading_date import FutureDates,AllTradingDays
-from time2point import DayMode
+from future_mysql.future_table_struct import data_model_tick, data_model_min, data_model_day, FutureTicker
+from future_mysql.trading_date import FutureDates,AllTradingDays
+from future_mysql.time2point import DayMode
 
 from future_mysql.misc import cffex_tickers, run_paralell_tasks
 from future_mysql.stock import StockTicker 
@@ -200,7 +200,18 @@ def stock_init():
 
 #clear_db
 #clear_min_db('cffex_if_min',data_model_min,20130101,20161001)
-       
+    
+def test():
+    def millsec2hhmmss(millisec):
+        millisec = int(millisec/1000)
+        return '{:02}{:02}{:02}'.format(int(millisec/3600),int((millisec%3600)/60),millisec%60)
+    import ShmPybind
+    shm_nostruct_api = ShmPybind.NoStructShm('0x0e0e0101',5379)
+    sms = StockMinSampler()
+    v = sms.one_to_N(5)
+    for i,v in enumerate(v):
+        print(i,v,millsec2hhmmss(shm_nostruct_api.getSpot2MilliSec(v)))
+        
 if __name__ == '__main__':
-    pass
+    test()
     

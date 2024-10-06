@@ -14,8 +14,9 @@ class DB_BASE(object):
         self.db_name = db_name
         connect_str = _connect_str.format(db_name)
 
-        self.engine = create_engine(connect_str, echo=False, encoding = "utf8")
-        self.meta = MetaData(bind=self.engine)
+        self.engine = create_engine(connect_str, echo=False)
+        self.meta = MetaData()
+        self.meta.bind = self.engine
         self.session = sessionmaker(bind=self.engine)
 
     def get_session(self):
