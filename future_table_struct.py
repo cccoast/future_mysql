@@ -3,7 +3,8 @@ import sys,os
 parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 if parent_path not in sys.path:
     sys.path.append(parent_path)
-    
+
+import sqlalchemy
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy import Table
 import future_mysql.dbBase as db
@@ -64,7 +65,7 @@ class data_model_tick(db.DB_BASE):
                 Column('OpenInterest', Integer),)
 
     def create_table(self):
-        if self.table_struct is not None:
+        if self.table_struct is not None and isinstance(self.table_struct, sqlalchemy.sql.schema.Table):
             self.tick_struct = self.quick_map(self.table_struct)
 
     def check_table_exist(self):
@@ -94,7 +95,7 @@ class data_model_min(db.DB_BASE):
                 Column('OpenInterest', Integer),)
 
     def create_table(self):
-        if self.table_struct is not None:
+        if self.table_struct is not None and isinstance(self.table_struct, sqlalchemy.sql.schema.Table):
             self.min_struct = self.quick_map(self.table_struct)
 
     def check_table_exist(self):
@@ -121,7 +122,7 @@ class data_model_day(db.DB_BASE):
                 Column('OpenInterest', Integer),)
 
     def create_table(self):
-        if self.table_struct is not None:
+        if self.table_struct is not None and isinstance(self.table_struct, sqlalchemy.sql.schema.Table):
             self.day_struct = self.quick_map(self.table_struct)
 
     def check_table_exist(self):
