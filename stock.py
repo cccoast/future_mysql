@@ -349,10 +349,11 @@ def test():
     test_stock_industry()
    
 if __name__ == '__main__':
-    si = StockIndustry()
-    a = si.ins_name2industry_fast(ins_name='000001.SZ')
-    
-    st = StockTicker()
-    b = st.get_id(a)
-    
-    print(a,b)
+#     si = StockIndustry()
+#     a = si.ins_name2industry_fast(ins_name='000001.SZ')
+#     
+#     st = StockTicker()
+#     b = st.get_id(a)
+#     
+#     print(a,b)
+    test_index()
