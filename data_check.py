@@ -107,7 +107,7 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = default_start_date
     fig, axes = plt.subplots(1, 1)
     fig.set_size_inches(14, 8) 
     axes.plot(datas)
-    _strides = int( len(datas) / 10 )
+    _strides = int( len(datas) / 10 ) if len(datas) > 10 else 1
     axes.set_xticks(range(len(datas))[::_strides])
     axes.set_xticklabels(ax[::_strides])
     axes.set_title(ind_id)
@@ -167,7 +167,7 @@ def check_adjust(ipckey1, ipckey2):
 
 ##test price
 def test_stock_basic_indicators(ins_id,ipckey):
-    ind_ids = [100,101,102,103,110,113,115]
+    ind_ids = [100,101,102,103,110,113,142]
     for ind_id in ind_ids:
         get_data_from_memory(ind_id,ipckey,ins_id)
 
@@ -260,8 +260,8 @@ def plot_all(ipc,strides = 60):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0101'
-    ins_id = 600030
+    ipckey = '0x0f0f0100'
+    ins_id = 1
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
