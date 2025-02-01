@@ -1,9 +1,13 @@
-
+#coding:utf-8
 import os,sys
 from dbBase import DB_BASE
 parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 if parent_path not in sys.path:
     sys.path.append(parent_path)
+
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 
 import pandas as pd
 import numpy as np
