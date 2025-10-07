@@ -5,10 +5,6 @@ parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 if parent_path not in sys.path:
     sys.path.append(parent_path)
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-
 import pandas as pd
 import numpy as np
 from future_table_struct import data_model_tick,data_model_min,data_model_day
@@ -221,7 +217,7 @@ def plot_adj_factor(ipc):
     plt.show()
     
 def plot_all(ipc,strides = 60):      
-    des_path = os.path.join('I:\data\datacheck',ipc)
+    des_path = os.path.join(r'h:\data\datacheck',ipc)
     if not os.path.exists(des_path):
         os.mkdir(des_path)
     db = stock()
@@ -269,8 +265,8 @@ def test_one():
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-#     plot_all(ipc = '0x0f0f0081',strides = 1)
-    test_one()
+    plot_all(ipc = '0x0f0f0105',strides = 10)
+#     test_one()
 
 
     

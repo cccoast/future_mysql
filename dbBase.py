@@ -159,7 +159,7 @@ class DB_BASE(object):
         return ret
     
 def get_all_table_names(dbname):
-    sql = r"select table_name from information_schema.tables where table_schema='{0}' and table_type='base table';".format(dbname)
+    sql = text(r"select table_name from information_schema.tables where table_schema='{0}' and table_type='base table';".format(dbname))
     connect_str = "mysql+pymysql://xudi:123456@localhost:3306/{0}".format(dbname)
     engine = create_engine(connect_str, echo=False)
     session = sessionmaker(bind=engine)

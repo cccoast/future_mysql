@@ -6,7 +6,7 @@ if parent_path not in sys.path:
 
 import sqlalchemy
 from sqlalchemy import Column, Integer, String, Float
-from sqlalchemy import Table
+from sqlalchemy import Table, inspect
 import future_mysql.dbBase as db
 import werkzeug.security as myhash
 
@@ -70,7 +70,9 @@ class data_model_tick(db.DB_BASE):
 
     def check_table_exist(self):
         if self.table_struct is not None:
-            return self.table_struct.exists()
+            inspector = inspect(self.engine)
+            return inspector.has_table(self.table_struct.name)
+        return False
 
 
 class data_model_min(db.DB_BASE):
@@ -100,7 +102,9 @@ class data_model_min(db.DB_BASE):
 
     def check_table_exist(self):
         if self.table_struct is not None:
-            return self.table_struct.exists()
+            inspector = inspect(self.engine)
+            return inspector.has_table(self.table_struct.name)
+        return False
 
 
 class data_model_day(db.DB_BASE):
@@ -127,7 +131,9 @@ class data_model_day(db.DB_BASE):
 
     def check_table_exist(self):
         if self.table_struct is not None:
-            return self.table_struct.exists()
+            inspector = inspect(self.engine)
+            return inspector.has_table(self.table_struct.name)
+        return False
 
 
 class FutureTicker(object):
