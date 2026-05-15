@@ -225,7 +225,6 @@ def set_future_order_au(force_reload=True):
     fo = futureOrder('au', num_of_ticker)
     fo.set_order_shfex(force_reload=force_reload)
 
-
 def set_future_trading_day_list(dbname):
     all_dates = AllTradingDays()
     trading_day_list = all_dates.get_trading_day_list()

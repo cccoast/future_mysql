@@ -89,13 +89,7 @@ def get_data_from_memory(ind_id, ipckey, ins_id, start_date = default_start_date
         return 
     unit_size = shm_header.getIndicatorsUnitSizeList()
     print(ind_id, nth_day, unit_size[ind_index], ind_index, ins_index, start_spot,end_spot)
-    if unit_size[ind_index] == 8:
-        datas = shm_api.fetchDoubleDataList(ind_index, ins_index, start_spot,end_spot)
-    else:
-        if ind_id == 113:
-            datas = shm_api.fetchIntDataList(ind_index, ins_index, start_spot,end_spot)
-        else:
-            datas = shm_api.fetchFloatDataList(ind_index, ins_index, start_spot,end_spot)    
+    datas = shm_api.fetchDataList(ind_index, ins_index, start_spot,end_spot)
     
     ax = [ trading_day_list[ int(i/spots_count_perday) ] for i in np.arange(len(datas)) ]
     if len(datas) > 100000:
@@ -265,8 +259,8 @@ def test_one():
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0105',strides = 10)
-#     test_one()
+    # plot_all(ipc = '0x0f0f0105',strides = 10)
+    test_one()
 
 
     
