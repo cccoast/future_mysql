@@ -234,7 +234,7 @@ def plot_all(ipc,strides = 60):
         axs = plt.figure(figsize=figsize, constrained_layout=True).subplots(rows, cols)
         for row in axs:
             for ax in row:
-                datas = shm.fetchDoubleDataList(ind_index,cur,0,length)[::strides]
+                datas = shm.fetchDataList(ind_index,cur,0,length)[::strides]
                 try:
                     title = ' '.join(stock_df.loc[ins_list[cur],['stock_code','stock_name']].values)
                 except:
@@ -259,8 +259,8 @@ def test_one():
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    # plot_all(ipc = '0x0f0f0105',strides = 10)
-    test_one()
+    plot_all(ipc = '0x0f0f0300',strides = 10)
+    # test_one()
 
 
     

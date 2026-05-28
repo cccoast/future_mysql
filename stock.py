@@ -279,27 +279,24 @@ class StockIndustry():
 ### get instruments list
 def indexs2insList(index_list = None,start_date = None,end_date = None,level = 'day'):
     if index_list is not None:
-        global global_stock_ins_id_list
-        if global_stock_ins_id_list is not None:
-            return global_stock_ins_id_list
-        else:
-            stock_index = StockIndex()
-            ins_list = set()
-            for index_name in index_list:
-                #take care of the effective date
-                sub_ins_list = stock_index.indexName2insIDs(index_name,start_date,end_date)
-                ins_list |= set(sub_ins_list)
-            ins_id_list = sorted(list(ins_list))
-#             ins_id_list.append(1399300)
-#             ins_id_list.append(1000905)
-#             ins_id_list.append(1000906)
-            for i in main_index_names:
+        # global global_stock_ins_id_list
+        # if global_stock_ins_id_list is not None:
+        #     return global_stock_ins_id_list
+        # else:
+        stock_index = StockIndex()
+        ins_list = set()
+        for index_name in index_list:
+            #take care of the effective date
+            sub_ins_list = stock_index.indexName2insIDs(index_name,start_date,end_date)
+            ins_list |= set(sub_ins_list)
+        ins_id_list = sorted(list(ins_list))
+        for i in main_index_names:
+            ins_id_list.append(stockindex_name_to_id(i))
+        if level == 'day':
+            for i in sw_sector_names:
                 ins_id_list.append(stockindex_name_to_id(i))
-            if level == 'day':
-                for i in sw_sector_names:
-                    ins_id_list.append(stockindex_name_to_id(i))
-            global_stock_ins_id_list = ins_id_list 
-            return global_stock_ins_id_list
+        global_stock_ins_id_list = ins_id_list
+        return global_stock_ins_id_list
     return None
 
 def get_default_index_code_ids():
