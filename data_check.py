@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 from future_table_struct import data_model_tick,data_model_min,data_model_day
 from tushare_feed.models import stock_reprice as stock_data_model_stock_reprice  
-from tushare_feed.models import sw_industry,stock 
+from tushare_feed.models import sw_industry_detail,stock
 
 import matplotlib.pyplot as plt
 from itertools import chain
@@ -215,10 +215,9 @@ def plot_all(ipc,strides = 60):
     if not os.path.exists(des_path):
         os.mkdir(des_path)
     db = stock()
-    stock_df = pd.read_sql_table(db.table_name,db.engine,index_col = 'stock_id',) 
-    db2 = sw_industry()
-    index_df = pd.read_sql_table(db2.table_name,db.engine)
-    index_df.index = index_df['industry_code'].apply(lambda x: int(x.split('.')[0]))   
+    stock_df = pd.read_sql_table(db.table_name,db.engine,index_col = 'stock_id',)
+    db2 = sw_industry_detail()
+    index_df = pd.read_sql_table(db2.table_name,db.engine,index_col = 'stock_code')
     shm = ShmPybind.Shm(ipc)
     header = shm.getHeader()
     figsize = (12,8)
@@ -235,31 +234,31 @@ def plot_all(ipc,strides = 60):
         for row in axs:
             for ax in row:
                 datas = shm.fetchDataList(ind_index,cur,0,length)[::strides]
-                try:
-                    title = ' '.join(stock_df.loc[ins_list[cur],['stock_code','stock_name']].values)
-                except:
+                if int(ins_list[cur]) < 1000000:
+                    title = ' '.join(stock_df.loc[ins_list[cur], ['stock_code', 'stock_name']].values)
                     try:
-                        if int(ins_list[cur]) < 1000000:
-                            title = ' '.join(index_df.loc[ins_list[cur],['industry_code','l1_name',]].values)
-                        else:
-                            title = str(ins_list[cur])
+                        _industry = index_df.loc[ ins_list[cur],'industry_name_l1' ]
+                        title = ' '.join([title, _industry])
                     except:
-                        continue
+                        pass
+                else:
+                    title = ins_list[cur]
                 ax.set_title(title)
                 ax.plot(datas)
                 cur += 1
                 if cur >= ins_count:
                     plt.savefig(os.path.join(des_path,str(step)))
                     return
+
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0100'
-    ins_id = 1
+    ipckey = '0x0f0f0301'
+    ins_id = 27
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0300',strides = 10)
+    plot_all(ipc = '0x0f0f0301',strides = 300)
     # test_one()
 
 
