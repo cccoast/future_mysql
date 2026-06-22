@@ -1,8 +1,5 @@
 #coding:utf-8
 import os,sys
-parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-if parent_path not in sys.path:
-    sys.path.append(parent_path)
     
 import future_mysql.dbBase as db
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float

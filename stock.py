@@ -1,11 +1,9 @@
 #coding:utf8
-# from stock_table_struct import stock_data_model_index_component,stock_data_model_industry,stock_data_model_stock_industry
+# from future_mysql.stock_table_struct import stock_data_model_index_component,stock_data_model_industry,stock_data_model_stock_industry
 from sqlalchemy import and_, distinct
 import pandas as pd
 
 import os,sys
-parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(parent_path)
 
 from tushare_feed.models import stock_index_weight,sw_industry,sw_industry_detail,csi_industry,csi_industry_detail,\
                                     csrc_industry,csrc_industry_detail

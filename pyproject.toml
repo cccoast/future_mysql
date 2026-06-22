@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "future_mysql"
+version = "0.1.0"
+description = "MySQL 数据库表结构与数据访问层"
+requires-python = ">=3.8"
+
+[tool.setuptools.packages.find]
+where = [".."]
+include = ["future_mysql*"]

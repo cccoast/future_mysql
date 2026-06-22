@@ -3,11 +3,11 @@ import os
 import pandas as pd
 import numpy as np
 
-import time2point
+import future_mysql.time2point as time2point
 from functools import partial
-from future_table_struct import data_model_tick
-from trading_date import AllTradingDays
-from misc import cffex_tickers, shfex_tickers
+from future_mysql.future_table_struct import data_model_tick
+from future_mysql.trading_date import AllTradingDays
+from future_mysql.misc import cffex_tickers, shfex_tickers
 
 valid_dates = set([int(x) for x in AllTradingDays().get_trading_day_list()])
 

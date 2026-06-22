@@ -1,13 +1,10 @@
 #coding:utf-8
 import sys,os
-parent_path = os.path.dirname(os.path.realpath(__file__))
-if parent_path not in sys.path:
-    sys.path.append(parent_path)
 
 import sqlalchemy
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, Index, Float
 from sqlalchemy import Table
-import dbBase as db
+import future_mysql.dbBase as db
 
 class stock_data_model_base(db.DB_BASE):
 
@@ -224,7 +221,7 @@ class stock_data_model_stock_industry(stock_data_model_base):
 
 
 def import_new_trading_days():
-    from trading_date import AllTradingDays
+    from future_mysql.trading_date import AllTradingDays
     trading_day_obj = AllTradingDays()
     all_days = set(trading_day_obj.get_trading_day_list())
 

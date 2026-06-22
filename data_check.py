@@ -1,20 +1,17 @@
 #coding:utf-8
 import os,sys
-from dbBase import DB_BASE
-parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-if parent_path not in sys.path:
-    sys.path.append(parent_path)
+from future_mysql.dbBase import DB_BASE
 
 import pandas as pd
 import numpy as np
-from future_table_struct import data_model_tick,data_model_min,data_model_day
+from future_mysql.future_table_struct import data_model_tick,data_model_min,data_model_day
 from tushare_feed.models import stock_reprice as stock_data_model_stock_reprice  
 from tushare_feed.models import sw_industry_detail,stock
 
 import matplotlib.pyplot as plt
 from itertools import chain
-from stock import StockTicker,StockIndex,StockIndustry
-from misc import run_paralell_tasks,get_today
+from future_mysql.stock import StockTicker,StockIndex,StockIndustry
+from future_mysql.misc import run_paralell_tasks,get_today
 # import ShmPython
 import ShmPybind
 import matplotlib.pyplot as plt
@@ -138,7 +135,7 @@ def check_adjust(ipckey1, ipckey2):
     trading_day_map = pd.Series(
         index=trading_day_list, data=list(range(len(trading_day_list))))
     spots_count_perday = header.getSpotsCountPerDay()
-    from misc import get_nth_specical_weekday_in_daterange
+    from future_mysql.misc import get_nth_specical_weekday_in_daterange
     from itertools import chain
     weekdays = [i for i in chain(*(list(get_nth_specical_weekday_in_daterange(20140101, 20151231, 5, 1).values())))]
     first_roll_day = weekdays[-1]
@@ -253,12 +250,12 @@ def plot_all(ipc,strides = 60):
         plt.savefig(os.path.join(des_path,str(step)))
 
 def test_one():
-    ipckey = '0x0f0f0301'
+    ipckey = '0x0f0f0250'
     ins_id = 27
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0301',strides = 300)
+    plot_all(ipc = '0x0f0f0260',strides = 10)
     # test_one()
 
 
