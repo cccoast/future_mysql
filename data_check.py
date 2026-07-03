@@ -150,7 +150,7 @@ def check_adjust(ipckey1, ipckey2):
     plt.plot(datas2, label='adjusted')
     plt.legend()
     plt.show()
-    #pdiff.txt comes from what adjustor output, line 74
+    #pdiff.txt comes from what adjustor _output, line 74
     df = pd.read_csv('~/tmp/pdiff{}.txt'.format(ins_index + 1),index_col=0,header=None,sep=' ')
     print(df[5].sum())
     

@@ -9,12 +9,17 @@ import itertools
 
 class DB_BASE(object):
 
+    _engine_cache = {}
+
     def __init__(self, db_name, _connect_str = "mysql+pymysql://xudi:123456@127.0.0.1:3306/{0}?charset=utf8" ):
 
         self.db_name = db_name
         connect_str = _connect_str.format(db_name)
 
-        self.engine = create_engine(connect_str, echo=False)
+        if connect_str not in DB_BASE._engine_cache:
+            DB_BASE._engine_cache[connect_str] = create_engine(
+                connect_str, echo=False, pool_size=5, max_overflow=5, pool_recycle=3600)
+        self.engine = DB_BASE._engine_cache[connect_str]
         self.meta = MetaData()
         self.meta.bind = self.engine
         self.session = sessionmaker(bind=self.engine)
