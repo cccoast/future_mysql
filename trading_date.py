@@ -183,7 +183,7 @@ class futureOrder(db.DB_BASE):
             else:
                 try:
                     rolling_date = rolling_day[year + int((month + 1) / 12)][int((month + 1) % 12)]
-                except:
+                except Exception:
                     rolling_date = rolling_day[year][month]
             print(date, rolling_date)
             if method == 'avg_volume_open_interest':

@@ -236,7 +236,7 @@ def plot_all(ipc,strides = 60):
                     try:
                         _industry = index_df.loc[ ins_list[cur],'industry_name_l1' ]
                         title = ' '.join([title, _industry])
-                    except:
+                    except Exception:
                         pass
                 else:
                     title = ins_list[cur]

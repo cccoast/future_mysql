@@ -1,5 +1,6 @@
 #coding:utf-8
 import os
+import traceback
 import pandas as pd
 import numpy as np
 
@@ -41,9 +42,7 @@ def import_tick_per_month(ticker,year_month,root_path,start_date,end_date,day_mo
         ftime2spot = fspot.fother_time2spot
         spots_count_perday = fspot.other_last
         fspot2time_str = lambda x: '{:02d}:{}:{}.{}'.format(*fspot.fother_spot2time_hhmmssms(x))
-    
-    spots_count_perday = fspot.cffex_last    
-        
+
     db_model = data_model_tick
 
     dirs = [x for x in [os.path.join(root_path, y) for y in os.listdir(root_path)] if os.path.isdir(os.path.join(x))]
@@ -75,8 +74,9 @@ def import_tick_per_month(ticker,year_month,root_path,start_date,end_date,day_mo
             print(day,ins)
             try:
                 df = pd.read_csv(os.path.join(idir, infile),index_col=None,usecols=[0, 1, 3, 4, 5, 6, 7, 8],parse_dates=False)
-            except:
+            except Exception:
                 print('error, cannot read csv file')
+                traceback.print_exc()
                 continue
             #some data source file may be in wrong format
             if len(df) < 1:

@@ -263,7 +263,7 @@ class StockIndustry():
         ss.close()
         try:
             return self.industry_df.loc[ (int(getattr(ret,lvl_code)),0) ,'industry_code'].values[0]
-        except:
+        except Exception:
             return '-1'
 
     def ins_name2industry_fast(self,ins_name,lv = 'l1'):
@@ -271,7 +271,7 @@ class StockIndustry():
         name =  int(self.industry_stock_df.loc[ ins_name , lvl_code])
         try:
             return self.industry_df.loc[ (name,0) ,'industry_code'].values[0]
-        except:
+        except Exception:
             return '-1'
 
 ### get instruments list

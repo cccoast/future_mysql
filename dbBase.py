@@ -7,14 +7,19 @@ from sqlalchemy import Column, Integer, String, text
 from collections.abc import Iterable
 import itertools
 
+from future_mysql.config import get_db_connect_str
+
 class DB_BASE(object):
 
     _engine_cache = {}
 
-    def __init__(self, db_name, _connect_str = "mysql+pymysql://xudi:123456@127.0.0.1:3306/{0}?charset=utf8" ):
+    def __init__(self, db_name, _connect_str=None):
 
         self.db_name = db_name
-        connect_str = _connect_str.format(db_name)
+        if _connect_str is None:
+            connect_str = get_db_connect_str(db_name)
+        else:
+            connect_str = _connect_str.format(db_name)
 
         if connect_str not in DB_BASE._engine_cache:
             DB_BASE._engine_cache[connect_str] = create_engine(
@@ -38,16 +43,27 @@ class DB_BASE(object):
 
     def execute_sqls(self, sqls):
         session = self.get_session()
-        for isql in sqls:
-            session.execute(isql)
-        session.commit()
-        session.close()
+        try:
+            for isql in sqls:
+                session.execute(isql)
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def execute_sql(self, sql):
         session = self.get_session()
-        re = session.execute(sql)
-        session.commit()
-        return re
+        try:
+            re = session.execute(sql)
+            session.commit()
+            return re
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def drop_table(self, table_name):
         self.execute_sql(text('Drop Table {0}.`{1}`'.format(self.db_name, table_name)))
@@ -66,22 +82,32 @@ class DB_BASE(object):
 
     def insert_dicts(self, _class, _dicts, merge=False):
         session = self.get_session()
-        if not merge:
-            session.execute(_class.__table__.insert(), _dicts)
-        else:
-            for _idict in _dicts:
-                session.merge(_class(**_idict))
-        session.commit()
-        session.close()
+        try:
+            if not merge:
+                session.execute(_class.__table__.insert(), _dicts)
+            else:
+                for _idict in _dicts:
+                    session.merge(_class(**_idict))
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def insert_dictlike(self, _class, _dict, merge=False):
         session = self.get_session()
-        if not merge:
-            session.add(_class(**_dict))
-        else:
-            session.merge(_class(**_dict))
-        session.commit()
-        session.close()
+        try:
+            if not merge:
+                session.add(_class(**_dict))
+            else:
+                session.merge(_class(**_dict))
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def insert_lists(self, _class, _lists, merge=False):
         cols = list(_class.__table__.c.keys())
@@ -101,46 +127,67 @@ class DB_BASE(object):
 
     def insert_objs(self, obj_lists):
         session = self.get_session()
-        for iobj in obj_lists:
-            session.add(iobj)
-        session.commit()
-        session.close()
+        try:
+            for iobj in obj_lists:
+                session.add(iobj)
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def insert_obj(self, iobj):
         session = self.get_session()
-        session.add(iobj)
-        session.commit()
-        session.close()
+        try:
+            session.add(iobj)
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def delete_lists_obj(self, obj_lists):
         session = self.get_session()
-        for i in obj_lists:
-            session.delete(i)
-        session.flush()
-        session.commit()
-        session.close()
+        try:
+            for i in obj_lists:
+                session.delete(i)
+            session.flush()
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def delete_lists(self, _class, _values, _key=None):
         session = self.get_session()
-        table = _class.__table__
-        if not _key:
-            _key = list(table.primary_key.columns.keys())
-        _lists = None
-        if isinstance(_values, list):
-            if isinstance(_values[0], collections.Iterable):
-                _lists = [dict(list(zip(_key, iv))) for iv in _values]
+        try:
+            table = _class.__table__
+            if not _key:
+                _key = list(table.primary_key.columns.keys())
+            _lists = None
+            if isinstance(_values, list):
+                if isinstance(_values[0], Iterable):
+                    _lists = [dict(list(zip(_key, iv))) for iv in _values]
+                else:
+                    _lists = [{_key[0]: val} for val in _values]
             else:
-                _lists = [{_key[0]: val} for val in _values]
-        else:
-            return False
+                return False
 
-#         session.execute(table.delete(),_lists)
-        for _idict in _lists:
-            objs = session.query(_class).filter_by(**_idict).all()
-            for iobj in objs:
-                session.delete(iobj)
-        session.flush()
-        session.commit()
+            #         session.execute(table.delete(),_lists)
+            for _idict in _lists:
+                objs = session.query(_class).filter_by(**_idict).all()
+                for iobj in objs:
+                    session.delete(iobj)
+            session.flush()
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def get_column_names(self, _class):
         return list(_class.__table__.c.keys())
@@ -159,19 +206,23 @@ class DB_BASE(object):
 
     def query_obj(self, obj, **kw):
         ss = self.get_session()
-        ret = ss.query(obj).filter_by(**kw).all()
-        ss.close()
-        return ret
+        try:
+            ret = ss.query(obj).filter_by(**kw).all()
+            return ret
+        finally:
+            ss.close()
     
 def get_all_table_names(dbname):
     sql = text(r"select table_name from information_schema.tables where table_schema='{0}' and table_type='base table';".format(dbname))
-    connect_str = "mysql+pymysql://xudi:123456@localhost:3306/{0}".format(dbname)
+    connect_str = get_db_connect_str(dbname)
     engine = create_engine(connect_str, echo=False)
     session = sessionmaker(bind=engine)
     ss = session()
-    records = ss.execute(sql)
-    ss.close()
-    return [j for j in itertools.chain(*[i for i in records])]
+    try:
+        records = ss.execute(sql)
+        return [j for j in itertools.chain(*[i for i in records])]
+    finally:
+        ss.close()
 
 def clear_table(db_name,db_model):
     sql = r'DELETE FROM {}.{} WHERE 1=1'

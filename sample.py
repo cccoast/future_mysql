@@ -166,7 +166,7 @@ def debug_single_day_min(ticker, day=20140314, freq=120):
                 min_df.loc[min_spot, 'ClosePrice'] = float(tick_df.loc[tick_spot + spots_gap - 1, 'LastPrice'])
                 min_df.loc[min_spot, 'Volume'] = int(tick_df.loc[tick_spot + spots_gap - 1, 'Volume'])
                 min_df.loc[min_spot, 'OpenInterest'] = int(tick_df.loc[tick_spot + spots_gap - 1, 'OpenInterest'])
-            except:
+            except Exception:
                 print(tick_spot)
                 print(tick_df.loc[tick_spot, 'Time'])
                 exit(-1)
