@@ -7,19 +7,14 @@ from sqlalchemy import Column, Integer, String, text
 from collections.abc import Iterable
 import itertools
 
-from future_mysql.config import get_db_connect_str
-
 class DB_BASE(object):
 
     _engine_cache = {}
 
-    def __init__(self, db_name, _connect_str=None):
+    def __init__(self, db_name, _connect_str = "mysql+pymysql://xudi:123456@127.0.0.1:3306/{0}?charset=utf8" ):
 
         self.db_name = db_name
-        if _connect_str is None:
-            connect_str = get_db_connect_str(db_name)
-        else:
-            connect_str = _connect_str.format(db_name)
+        connect_str = _connect_str.format(db_name)
 
         if connect_str not in DB_BASE._engine_cache:
             DB_BASE._engine_cache[connect_str] = create_engine(
@@ -214,7 +209,7 @@ class DB_BASE(object):
     
 def get_all_table_names(dbname):
     sql = text(r"select table_name from information_schema.tables where table_schema='{0}' and table_type='base table';".format(dbname))
-    connect_str = get_db_connect_str(dbname)
+    connect_str = "mysql+pymysql://xudi:123456@localhost:3306/{0}".format(dbname)
     engine = create_engine(connect_str, echo=False)
     session = sessionmaker(bind=engine)
     ss = session()

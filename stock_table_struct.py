@@ -244,9 +244,7 @@ def import_database():
     src_path = r'/media/xudi/software/stock/phData/das'
     import os
     sqls = [ i for i in os.listdir(src_path) if i.endswith('.sql') ]
-    user = os.getenv("MYSQL_USER", "xudi")
-    password = os.getenv("MYSQL_PASSWORD", "123456")
-    cmd  = r'mysql -u{} -p{} stock < {}'.format(user, password, '{}')
+    cmd  = r'mysql -uxudi -p123456 stock < {}'
     os.chdir(src_path)
     for sql in sqls:
         print(sql)
