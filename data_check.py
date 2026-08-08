@@ -232,12 +232,16 @@ def plot_all(ipc,strides = 60):
             for ax in row:
                 datas = shm.fetchDataList(ind_index,cur,0,length)[::strides]
                 if int(ins_list[cur]) < 1000000:
-                    title = ' '.join(stock_df.loc[ins_list[cur], ['stock_code', 'stock_name']].values)
                     try:
-                        _industry = index_df.loc[ ins_list[cur],'industry_name_l1' ]
-                        title = ' '.join([title, _industry])
-                    except Exception:
-                        pass
+                        title = ' '.join(stock_df.loc[ins_list[cur], ['stock_code', 'stock_name']].values)
+                        try:
+                            _industry = index_df.loc[ ins_list[cur],'industry_name_l1' ]
+                            title = ' '.join([title, _industry])
+                        except Exception:
+                            pass
+                    except KeyError:
+                        # instrument 在 stock 表里没有对应记录(如已退市/未入库),退化为用 id 当标题
+                        title = ins_list[cur]
                 else:
                     title = ins_list[cur]
                 ax.set_title(title)
@@ -255,7 +259,7 @@ def test_one():
     test_stock_all(ipckey,ins_id)
         
 if __name__ == '__main__':
-    plot_all(ipc = '0x0f0f0260',strides = 10)
+    plot_all(ipc = '0x0f0f0220',strides = 10)
     # test_one()
 
 
