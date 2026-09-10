@@ -39,7 +39,7 @@ class AllTradingDays(db.DB_BASE):
     
     def get_first_bigger_than(self, idate):
         ss = self.get_session()
-        ret = ss.query(self.trading_day_obj).filter(self.trading_day_obj.date >= int(idate)).first()
+        ret = ss.query(self.trading_day_obj).filter(self.trading_day_obj.date >= int(idate)).order_by(self.trading_day_obj.date.asc()).first()
         if ret:
             ss.close()
             return ret.date
